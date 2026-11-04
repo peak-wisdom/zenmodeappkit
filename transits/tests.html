@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8"><title>Transit calculation and playback checks</title><h1>Transit calculation and playback checks</h1><pre id="output">Running…</pre><script type="module">
+// SPDX-License-Identifier: AGPL-3.0-only
+import {DAY,MIN,MAX,parseDate,range,advance,positions,parseDateTime,timeInput} from './core.js?v=3';
+import {loadEngine,calculate} from '../birth-chart/engine.js';
+import {normalizeSelection,toggleSelection,northSlots,indianChart} from './charts.js?v=4';
+const lines=[];let checks=0;
+function ok(value,name){if(!value)throw new Error(name);checks++;lines.push('PASS '+name);}
+function rejects(fn,name){let caught=false;try{fn();}catch{caught=true;}ok(caught,name);}
+try{
+ok(parseDateTime('2024-04-01','')===Date.UTC(2024,3,1),'Blank optional time uses midnight');
+ok(parseDateTime('2024-04-01','14:35:27')===Date.UTC(2024,3,1,14,35,27),'UTC time includes seconds');
+ok(parseDateTime('2024-04-01','14:35')===Date.UTC(2024,3,1,14,35),'UTC time accepts minutes');
+rejects(()=>parseDateTime('2024-04-01','24:00'),'Invalid time rejected');
+const timed=range('2024-04-01','2024-04-01','10:00','11:00');ok(timed.end-timed.start===3600000,'Same-day time range accepted');
+rejects(()=>range('2024-04-01','2024-04-01','11:00','10:00'),'Reversed same-day time range rejected');
+ok(timeInput(timed.start)==='10:00:00'&&timeInput(parseDate('2024-04-01'))==='','Saved time formats and midnight stays optional');
+const names=['Moon','Sun','Mercury','Saturn'];
+ok(normalizeSelection('Moon',names).join()==='Moon','Legacy single selection migrates');
+ok(normalizeSelection([],names).length===0,'Empty saved selection stays empty');
+ok(normalizeSelection(['Moon','Sun','Moon','bad'],names).join()==='Moon,Sun','Saved selections are validated and deduplicated');
+let selection=toggleSelection([],'Moon');selection=toggleSelection(selection,'Sun');ok(selection.join()==='Moon,Sun','Multiple planets can be selected');selection=toggleSelection(selection,'Moon');ok(selection.join()==='Sun','Selected Moon toggles off');ok(toggleSelection(selection,'Sun').length===0,'Last selected planet toggles off');
+for(let house=0;house<12;house++){const slots=northSlots(house,12);ok(slots.length===12&&slots.every(s=>s.x>0&&s.x<1000&&s.y>0&&s.y<1000),'Crowded North Indian house '+(house+1)+' has valid icon slots');}
+const mock=names.map((name,i)=>({name,rashi:i,motion:'Direct'}));for(const view of ['north','south']){const chart=indianChart(mock,view,0,['Moon','Sun']);ok((chart.match(/<circle /g)||[]).length===4&&(chart.match(/aria-pressed="true"/g)||[]).length===2,view+' chart renders planet markers and multiple selections');}
+ok(parseDate('2000-02-29')===Date.UTC(2000,1,29),'Leap day accepted');
+rejects(()=>parseDate('2023-02-29'),'Invalid calendar date rejected');rejects(()=>parseDate('2100-01-01'),'Upper date limit enforced');rejects(()=>range('2000-01-02','2000-01-01'),'Reversed range rejected');rejects(()=>range('2000-01-01','2000-01-01'),'Zero-length range rejected');
+ok(advance(5,8,0,10,false).stamp===10&&advance(5,8,0,10,false).done,'Forward playback clamps and stops');
+ok(advance(5,-8,0,10,false).stamp===0&&advance(5,-8,0,10,false).done,'Reverse playback clamps and stops');
+ok(advance(9,3,0,10,true).stamp===2&&!advance(9,3,0,10,true).done,'Forward looping preserves overshoot');
+ok(advance(1,-3,0,10,true).stamp===8,'Reverse looping preserves overshoot');ok(!advance(9,1,0,10,true).done,'Exact loop boundary continues');
+ok(!advance(0,0,0,10,false).done&&!advance(10,0,0,10,false).done,'Zero-time animation frame does not stop playback at the start');
+const {swe,lib}=await loadEngine();
+for(const nodes of ['mean','true']){
+ const p=positions(swe,lib,Date.UTC(2026,10,2),nodes,true);
+ ok(p.length===12&&p.every(x=>Number.isFinite(x.longitude)&&Number.isFinite(x.speed)),nodes+' nodes with all outer planets');
+ const r=p.find(x=>x.name==='Rahu'),k=p.find(x=>x.name==='Ketu');ok(Math.abs(Math.abs(r.longitude-k.longitude)-180)<1e-8,nodes+' opposite lunar nodes');
+}
+for(const stamp of [MIN,MAX,Date.UTC(2000,0,1,12)])ok(positions(swe,lib,stamp).length===9,'Traditional grahas at '+new Date(stamp).toISOString());
+const stamp=Date.UTC(2026,10,2),p=positions(swe,lib,stamp),later=positions(swe,lib,stamp+DAY);
+ok(Math.abs(later.find(x=>x.name==='Moon').longitude-p.find(x=>x.name==='Moon').longitude)>.1,'Positions advance when time advances');
+const c=await calculate({date:'2026-11-02',time:'00:00',zone:'Etc/UTC',latitude:0,longitude:0,disambiguation:'reject',nodes:'mean',yearDays:365.25});
+ok(p.every(x=>Math.abs(c.points.find(q=>q.name===x.name).longitude-x.longitude)<1e-8),'Transits agree with existing birth-chart engine at the same instant');
+ok(positions(swe,lib,Date.UTC(2024,3,10)).find(p=>p.name==='Mercury').speed<0,'Mercury retrograde case retains negative speed');
+rejects(()=>positions(swe,lib,MAX+DAY),'Calculation bounds enforced');
+lines.push('\n'+checks+' checks passed.');
+}catch(error){lines.push('FAIL '+error.stack);}
+document.getElementById('output').textContent=lines.join('\n');
+</script>

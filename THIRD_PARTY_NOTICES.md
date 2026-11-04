@@ -4,7 +4,7 @@ Read [LICENSE_SCOPE.md](LICENSE_SCOPE.md) for the project's MIT/AGPL component b
 
 ## Swiss Ephemeris and @swisseph/browser
 
-- Used by: `birth-chart/engine.js`.
+- Used by: `birth-chart/engine.js` and the `transits/` application through that shared engine.
 - Browser package: `@swisseph/browser` version **1.4.0**, loaded from the pinned jsDelivr npm distribution, including its JavaScript and WebAssembly assets.
 - Package source and notices: https://github.com/swisseph-js/swisseph/tree/main/packages/browser
 - Swiss Ephemeris source: https://github.com/aloistr/swisseph
@@ -13,6 +13,7 @@ Read [LICENSE_SCOPE.md](LICENSE_SCOPE.md) for the project's MIT/AGPL component b
 - AGPL license text: [birth-chart/LICENSE](birth-chart/LICENSE).
 - Project chart source: https://github.com/peak-wisdom/zenmodeappkit/tree/main/birth-chart
 - Project-specific conventions and dependency information: [birth-chart/NOTICE.md](birth-chart/NOTICE.md).
+- Transit viewer source and conventions: https://github.com/peak-wisdom/zenmodeappkit/tree/main/transits and [transits/NOTICE.md](transits/NOTICE.md).
 
 The dependency is fetched at runtime rather than vendored. Loading it from a CDN does not remove its license requirements. A root MIT license does not relicense Swiss Ephemeris or the combined birth-chart application.
 

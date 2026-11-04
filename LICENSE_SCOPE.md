@@ -1,6 +1,6 @@
 # License scope
 
-This repository contains separately licensed components. The root [MIT license](LICENSE) applies to project-owned code and documentation outside `birth-chart/`, except where a file carries another license or contains third-party material subject to its own terms.
+This repository contains separately licensed components. The root [MIT license](LICENSE) applies to project-owned code and documentation outside `birth-chart/` and `transits/`, except where a file carries another license or contains third-party material subject to its own terms.
 
 | Component | License |
 | --- | --- |
@@ -8,6 +8,7 @@ This repository contains separately licensed components. The root [MIT license](
 | Shared `theme.js`, `theme.css`, and `timers.js` | MIT |
 | Project-owned root documentation | MIT |
 | `birth-chart/` implementation, interface, and calculation checks | AGPL-3.0-only; see [birth-chart/LICENSE](birth-chart/LICENSE) |
+| `transits/` implementation, interface, and calculation checks | AGPL-3.0-only; see [birth-chart/LICENSE](birth-chart/LICENSE) and [transits/NOTICE.md](transits/NOTICE.md) |
 | External libraries and API data | Their respective terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) |
 
 The MIT grant does not replace or waive AGPL obligations for the birth-chart application or an applicable combined work using Swiss Ephemeris. MIT-covered shared files retain their MIT notices when included in that application; the combined application remains subject to the applicable AGPL requirements. Distribution or adaptation must preserve required notices and provide corresponding source as required by the relevant licenses.
