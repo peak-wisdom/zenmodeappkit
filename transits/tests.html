@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import {DAY,MIN,MAX,parseDate,range,advance,positions,parseDateTime,timeInput} from './core.js?v=3';
 import {loadEngine,calculate} from '../birth-chart/engine.js';
-import {normalizeSelection,toggleSelection,northSlots,indianChart} from './charts.js?v=4';
+import {normalizeSelection,toggleSelection,northSlots,indianChart} from './charts.js?v=5';
 const lines=[];let checks=0;
 function ok(value,name){if(!value)throw new Error(name);checks++;lines.push('PASS '+name);}
 function rejects(fn,name){let caught=false;try{fn();}catch{caught=true;}ok(caught,name);}
@@ -20,7 +20,7 @@ ok(normalizeSelection([],names).length===0,'Empty saved selection stays empty');
 ok(normalizeSelection(['Moon','Sun','Moon','bad'],names).join()==='Moon,Sun','Saved selections are validated and deduplicated');
 let selection=toggleSelection([],'Moon');selection=toggleSelection(selection,'Sun');ok(selection.join()==='Moon,Sun','Multiple planets can be selected');selection=toggleSelection(selection,'Moon');ok(selection.join()==='Sun','Selected Moon toggles off');ok(toggleSelection(selection,'Sun').length===0,'Last selected planet toggles off');
 for(let house=0;house<12;house++){const slots=northSlots(house,12);ok(slots.length===12&&slots.every(s=>s.x>0&&s.x<1000&&s.y>0&&s.y<1000),'Crowded North Indian house '+(house+1)+' has valid icon slots');}
-const mock=names.map((name,i)=>({name,rashi:i,motion:'Direct'}));for(const view of ['north','south']){const chart=indianChart(mock,view,0,['Moon','Sun']);ok((chart.match(/<circle /g)||[]).length===4&&(chart.match(/aria-pressed="true"/g)||[]).length===2,view+' chart renders planet markers and multiple selections');}
+const mock=names.map((name,i)=>({name,rashi:i,motion:'Direct'}));for(const view of ['north','south']){const chart=indianChart(mock,view,0,['Moon','Sun']);ok((chart.match(/<image /g)||[]).length===4&&(chart.match(/aria-pressed="true"/g)||[]).length===2,view+' chart renders planet icons and multiple selections');}
 ok(parseDate('2000-02-29')===Date.UTC(2000,1,29),'Leap day accepted');
 rejects(()=>parseDate('2023-02-29'),'Invalid calendar date rejected');rejects(()=>parseDate('2100-01-01'),'Upper date limit enforced');rejects(()=>range('2000-01-02','2000-01-01'),'Reversed range rejected');rejects(()=>range('2000-01-01','2000-01-01'),'Zero-length range rejected');
 ok(advance(5,8,0,10,false).stamp===10&&advance(5,8,0,10,false).done,'Forward playback clamps and stops');

@@ -2,7 +2,7 @@
 import {SIGNS,RASHIS,NAKSHATRAS,norm,degrees} from '../birth-chart/core.js';
 import {loadEngine} from '../birth-chart/engine.js';
 import {escape} from '../birth-chart/report.js';
-import {indianChart,normalizeSelection,toggleSelection} from './charts.js?v=4';
+import {iconPath,indianChart,normalizeSelection,toggleSelection} from './charts.js?v=5';
 import {DAY,MIN,MAX,SPECS,parseDate,dateInput,timeInput,range,advance,positions} from './core.js?v=3';
 const $=id=>document.getElementById(id),KEY='still-transits-v1';
 const today=Math.floor(Date.now()/DAY)*DAY;
@@ -43,11 +43,11 @@ function buildWheel(){
   nakShort.forEach((name,i)=>{const a=(i+.5)*360/27,[x,y]=polar(444,a),[x1,y1]=polar(416,i*360/27),[x2,y2]=polar(468,i*360/27);let rotate=a;if(a>90&&a<270)rotate+=180;svg+=`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="currentColor" opacity=".13"/>`+txt(x,y+4,name,12,`transform="rotate(${rotate} ${x} ${y})"`);});
   svg+=txt(500,480,'SIDEREAL SKY',16,'letter-spacing="3"')+txt(500,514,'Lahiri',26)+txt(500,545,'geocentric longitude',13);
   svg+='<g id="motionTrails"></g>';
-  for(const p of bodies){const index=SPECS.findIndex(s=>s[0]===p.name),radius=94+index*24;svg+=`<circle cx="500" cy="500" r="${radius}" fill="none" stroke="currentColor" opacity=".045"/><g data-planet="${p.name}" role="button" tabindex="0" aria-pressed="false" aria-label="Select ${p.name}"><title>${p.name}</title><circle class="selection-ring" r="18" fill="none" stroke="${p.color}" stroke-width="2" opacity="0"/><circle r="12" fill="${p.color}"/><text class="planet-label" x="0" y="4" text-anchor="middle" fill="#12362b" font-size="11">${p.short}</text><text class="retro" x="16" y="-13" fill="currentColor" font-size="13"></text></g>`;}
+  for(const p of bodies){const index=SPECS.findIndex(s=>s[0]===p.name),radius=94+index*24;svg+=`<circle cx="500" cy="500" r="${radius}" fill="none" stroke="currentColor" opacity=".045"/><g data-planet="${p.name}" role="button" tabindex="0" aria-pressed="false" aria-label="Select ${p.name}"><title>${p.name}</title><circle class="selection-ring" r="18" fill="none" stroke="${p.color}" stroke-width="2" opacity="0"/><image href="${iconPath(p.name)}" x="-16" y="-16" width="32" height="32" preserveAspectRatio="xMidYMid meet"/><text class="retro" x="16" y="-13" fill="currentColor" font-size="13"></text></g>`;}
   $('stage').innerHTML=svg+'</svg>';markers=new Map([...$('stage').querySelectorAll('[data-planet]')].map(node=>[node.dataset.planet,node]));trailKey='';
 }
 function picks(){
-  $('planetPicks').innerHTML=bodies.map(p=>`<button type="button" data-planet="${p.name}" aria-pressed="${state.selected.includes(p.name)}">${p.name}</button>`).join('');
+  $('planetPicks').innerHTML=bodies.map(p=>`<button type="button" data-planet="${p.name}" aria-pressed="${state.selected.includes(p.name)}"><img src="${iconPath(p.name)}" alt="" width="28" height="28">${p.name}</button>`).join('');
   $('selectionCount').textContent=state.selected.length?state.selected.length+' selected':'No planets selected';
   $('clearSelection').disabled=!state.selected.length;
 }
@@ -85,8 +85,8 @@ function draw(){
   }else{
     $('stage').innerHTML=indianChart(bodies,state.view,state.asc,state.selected);
   }
-  $('details').innerHTML=state.selected.length?bodies.filter(p=>state.selected.includes(p.name)).map(p=>`<div class="planet-detail"><strong>${p.name}</strong> · ${p.motion}<br>${RASHIS[p.rashi]} / ${SIGNS[p.rashi]} ${degrees(p.longitude)} · ${p.nakshatra.name}, pada ${p.nakshatra.pada}<br>${p.longitude.toFixed(6)}° absolute longitude · ${p.speed.toFixed(4)}° per day</div>`).join(''):'Select one or more planets to compare their positions and show their trails. Click a selected planet again to deselect it.';
-  $('positions').innerHTML=bodies.map(p=>`<tr class="${state.selected.includes(p.name)?'selected':''}"><th scope="row">${p.name}</th><td>${RASHIS[p.rashi]} / ${SIGNS[p.rashi]}</td><td>${degrees(p.longitude)}</td><td>${p.nakshatra.name} · ${p.nakshatra.pada}</td><td>${p.speed.toFixed(4)}</td><td>${p.motion}</td></tr>`).join('');
+  $('details').innerHTML=state.selected.length?bodies.filter(p=>state.selected.includes(p.name)).map(p=>`<div class="planet-detail"><strong><img src="${iconPath(p.name)}" alt="" width="32" height="32">${p.name}</strong> · ${p.motion}<br>${RASHIS[p.rashi]} / ${SIGNS[p.rashi]} ${degrees(p.longitude)} · ${p.nakshatra.name}, pada ${p.nakshatra.pada}<br>${p.longitude.toFixed(6)}° absolute longitude · ${p.speed.toFixed(4)}° per day</div>`).join(''):'Select one or more planets to compare their positions and show their trails. Click a selected planet again to deselect it.';
+  $('positions').innerHTML=bodies.map(p=>`<tr class="${state.selected.includes(p.name)?'selected':''}"><th scope="row"><img class="table-planet" src="${iconPath(p.name)}" alt="" width="24" height="24">${p.name}</th><td>${RASHIS[p.rashi]} / ${SIGNS[p.rashi]}</td><td>${degrees(p.longitude)}</td><td>${p.nakshatra.name} · ${p.nakshatra.pada}</td><td>${p.speed.toFixed(4)}</td><td>${p.motion}</td></tr>`).join('');
 }
 function resetView(){markers.clear();trailKey='';draw();picks();}
 function move(stamp){pause();state.stamp=Math.max(state.start,Math.min(state.end,stamp));draw();save();}

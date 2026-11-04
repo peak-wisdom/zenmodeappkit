@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import {SIGNS} from '../birth-chart/core.js';
 import {escape} from '../birth-chart/report.js';
+export const iconPath=name=>'icons/'+name.toLowerCase()+'.png';
 export function normalizeSelection(value,names){
   const list=Array.isArray(value)?value:typeof value==='string'?[value]:[];
   return [...new Set(list.filter(name=>names.includes(name)))];
@@ -34,7 +35,7 @@ export function northSlots(house,count){
 const text=(x,y,value,size=20,fill='#243e34')=>`<text x="${x}" y="${y}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${size}" fill="${fill}">${escape(value)}</text>`;
 function marker(p,{x,y,size},selected){
   const active=selected.includes(p.name),label=p.name+(p.motion==='Retrograde'?' R':p.motion==='Stationary'?' S':'');
-  return `<g class="chart-planet" data-planet="${p.name}" role="button" tabindex="0" aria-pressed="${active}" aria-label="${active?'Deselect':'Select'} ${p.name}"><title>${label}</title><rect x="${x-size/2-7}" y="${y-size/2-5}" width="${size+14}" height="${size+28}" rx="10" fill="${active?'#d8ebdf':'transparent'}" stroke="${active?'#36765c':'transparent'}" stroke-width="2"/><circle cx="${x}" cy="${y}" r="${size/2}" fill="${p.color||'#d4def6'}"/>${text(x,y+size*.12,p.short||p.name.slice(0,2),size*.38)}${text(x,y+size/2+17,label,Math.min(16,size*.32))}</g>`;
+  return `<g class="chart-planet" data-planet="${p.name}" role="button" tabindex="0" aria-pressed="${active}" aria-label="${active?'Deselect':'Select'} ${p.name}"><title>${label}</title><rect x="${x-size/2-7}" y="${y-size/2-5}" width="${size+14}" height="${size+28}" rx="10" fill="${active?'#d8ebdf':'transparent'}" stroke="${active?'#36765c':'transparent'}" stroke-width="2"/><image href="${iconPath(p.name)}" x="${x-size/2}" y="${y-size/2}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/>${text(x,y+size/2+17,label,Math.min(16,size*.32))}</g>`;
 }
 export function indianChart(bodies,view,asc,selected=[]){
   const groups=Array.from({length:12},()=>[]);bodies.forEach(p=>groups[p.rashi].push(p));
