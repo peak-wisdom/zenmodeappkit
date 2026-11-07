@@ -4,7 +4,7 @@ import {PadAudio, RANGES, ROOTS, SCALES, MALLETS, notesFor, clamp, soundAt} from
 const $ = id => document.getElementById(id);
 const pad = $('pad');
 const key = 'still-sound-pad-v1';
-const settings = {wave: 'steel-drum', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4, mallet: 'rubber'};
+const settings = {wave: 'steel-drum', synthWave: 'sine', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4, mallet: 'rubber'};
 const position = {x: 0.5, y: 0.5};
 const audio = new PadAudio(() => {
   const mallet = $('malletVisual');
@@ -33,6 +33,8 @@ try {
   if ([0.6, 1.4, 2.8].includes(saved?.sustain)) settings.sustain = saved.sustain;
   if (Object.hasOwn(MALLETS, saved?.mallet)) settings.mallet = saved.mallet;
 } catch { storageAvailable = false; }
+if (settings.wave !== 'steel-drum') settings.synthWave = settings.wave;
+try { const old = JSON.parse(localStorage.getItem(key)); if (['sine','triangle','sawtooth'].includes(old?.synthWave)) settings.synthWave=old.synthWave; } catch {}
 if (settings.wave === 'steel-drum' && settings.scale === 'continuous') settings.scale = 'majorPentatonic';
 
 function save() {
@@ -55,6 +57,7 @@ function render() {
 
 function renderInstrument() {
   const drum = settings.wave === 'steel-drum';
+  $('steelMode').setAttribute('aria-pressed',String(drum)); $('synthMode').setAttribute('aria-pressed',String(!drum)); $('wave').disabled=drum; $('wave').value=settings.synthWave;
   const notes = notesFor(settings);
   $('noteLanes').replaceChildren();
   notes.forEach((note, index) => {
@@ -181,9 +184,10 @@ for (const [value, scale] of Object.entries(SCALES)) {
   const option = document.createElement('option'); option.value = value; option.textContent = scale.name; $('scale').append(option);
 }
 for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain', 'mallet']) {
-  $(id).value = settings[id];
+  $(id).value = id==='wave'?settings.synthWave:settings[id];
   $(id).addEventListener('input', () => {
     settings[id] = ['volume', 'root', 'sustain'].includes(id) ? Number($(id).value) : $(id).value;
+    if(id==='wave')settings.synthWave=settings.wave;
     if (settings.wave === 'steel-drum' && settings.scale === 'continuous') {
       settings.scale = 'majorPentatonic'; $('scale').value = settings.scale;
     }
@@ -193,5 +197,6 @@ for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain', 'mallet
     $('status').textContent = storageAvailable ? 'Sound settings saved in this browser.' : 'Settings applied. Browser storage is unavailable.';
   });
 }
+for(const [id,wave] of [['steelMode','steel-drum'],['synthMode',null]]) $(id).addEventListener('click',()=>{stop(true);settings.wave=wave||settings.synthWave;if(wave&&settings.scale==='continuous'){settings.scale='majorPentatonic';$('scale').value=settings.scale;}save();renderInstrument();});
 renderInstrument();
 if (!storageAvailable) $('status').textContent = 'Ready to play. Browser storage is unavailable, so settings may not persist.';

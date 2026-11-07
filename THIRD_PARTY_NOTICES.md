@@ -30,3 +30,11 @@ Birthplace search results are displayed with Open-Meteo / GeoNames attribution. 
 ## Other tools
 
 The sound mixer synthesizes its sound using browser audio APIs; the wallpaper generator renders fractals in the browser. No downloaded sound recordings or wallpaper image packs are bundled in these apps. Browser-provided fonts and emoji are rendered by the user's platform and are not distributed as font files by this repository.
+
+## chess.js
+
+- Used by the Chess game for legal moves, game history, and end conditions.
+- Version: **1.4.0**, self-hosted at `chess/vendor/chess.js`.
+- Source: https://github.com/jhlywa/chess.js
+- License: BSD-2-Clause. The complete upstream copyright and license notice is preserved in [chess/vendor/LICENSE](chess/vendor/LICENSE).
+- The interface and casual computer opponent are project-owned MIT code.

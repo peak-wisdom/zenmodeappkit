@@ -40,8 +40,8 @@ function scheduleNote(rack, event, at, stepDuration, style) {
       duration = 0.16; level = 0.25 * event.velocity;
     } else {
       source.frequency.setValueAtTime(frequencyFor(event.midi), at);
-      if (event.track === 'bass' || style === 'dream') source.type = 'triangle';
-      else source.setPeriodicWave(pulse(rack, style === 'adventure' ? 0.25 : 0.5));
+      if (event.voice === 'triangle' || !event.voice && (event.track === 'bass' || style === 'dream')) source.type = 'triangle';
+      else source.setPeriodicWave(pulse(rack, event.voice ? event.voice === 'pulse' ? .25 : .5 : style === 'adventure' ? .25 : .5));
     }
     source.connect(gain);
   }

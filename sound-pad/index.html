@@ -4,10 +4,10 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Play a gentle touch synthesizer. Drag across the XY pad to change pitch, brightness, and volume.">
   <title>Still • Sound Pad</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=3">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=4">
 </head>
 <body data-app="sound-pad">
-  <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a><a href="../chiptunes/">Chiptunes</a></nav>
+  <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a><a href="../chiptunes/">Chiptunes</a><a href="../strings/">Guitar &amp; Ukulele</a><a href="../handpan/">Handpan</a><a href="../sequencer/">Chiptune Studio</a><a href="../sudoku/">Sudoku</a><a href="../2048/">2048</a><a href="../chess/">Chess</a></nav>
   <div class="theme-toolbar"><span id="theme-notice" role="status"></span><button id="theme-toggle" type="button" aria-label="Switch to light theme">Light theme</button></div>
   <main>
     <header><span class="eyebrow">STILL / PLAY BY FEEL</span><h1>A sound at your fingertips.</h1><p>A theremin-inspired XY pad. Touch, hold, and glide to find a sound of your own.</p></header>
@@ -23,8 +23,8 @@
       <div class="pitch-axis"><span>← Lower pitch</span><span>Higher pitch →</span></div>
       <p id="instructions" class="instructions">Hold a finger or mouse button on the pad, then drag. Lift to let the sound fade.</p>
       <p id="instrumentInfo" class="instrument-info"></p>
-      <div class="settings">
-        <label for="wave">Voice<select id="wave"><option value="steel-drum">Steel drum</option><option value="sine">Pure · sine</option><option value="triangle">Soft · triangle</option><option value="sawtooth">Warm · sawtooth</option></select></label>
+      <div class="controls instrument-modes"><button id="steelMode" type="button" aria-pressed="true">Steel drum</button><button id="synthMode" type="button" aria-pressed="false">Synth pad</button><a href="../handpan/">Circular handpan ↗</a></div><div class="settings">
+        <label for="wave">Synth voice<select id="wave"><option value="sine">Pure · sine</option><option value="triangle">Soft · triangle</option><option value="sawtooth">Warm · sawtooth</option></select></label>
         <label for="range">Pitch range<select id="range"><option value="low">Low · 55–440 Hz</option><option value="mid" selected>Mid · 110–880 Hz</option><option value="high">High · 220–1760 Hz</option></select></label>
         <label for="root">Root note<select id="root"></select></label>
         <label for="scale">Scale<select id="scale"></select></label>
@@ -38,6 +38,6 @@
     </section>
     <footer>Move slowly. Listen closely.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=3"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=4"></script>
 </body>
 </html>
