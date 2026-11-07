@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Play a gentle touch synthesizer. Drag across the XY pad to change pitch, brightness, and volume.">
   <title>Still • Sound Pad</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=1">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=2">
 </head>
 <body data-app="sound-pad">
   <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a></nav>
@@ -12,19 +12,23 @@
   <main>
     <header><span class="eyebrow">STILL / PLAY BY FEEL</span><h1>A sound at your fingertips.</h1><p>A theremin-inspired XY pad. Touch, hold, and glide to find a sound of your own.</p></header>
     <section class="instrument" aria-label="Touch synthesizer">
-      <div class="readouts"><div><span>Pitch</span><strong id="pitch">311 Hz</strong></div><div><span>Tone</span><strong id="tone">Balanced</strong></div><span class="badge" id="playing">Ready</span></div>
+      <div class="readouts"><div><span>Note</span><strong id="note">C5</strong></div><div><span>Pitch</span><strong id="pitch">523 Hz</strong></div><div><span>Tone</span><strong id="tone">Balanced</strong></div><span class="badge" id="playing">Ready</span></div>
       <div class="pad-wrap">
         <span class="vertical-label">Brighter &amp; louder ↑</span>
         <div id="pad" class="pad" tabindex="0" role="group" aria-label="Sound pad" aria-describedby="instructions keyboardHelp">
-          <div class="grid" aria-hidden="true"></div><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div>
+          <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div>
           <span class="pad-message" id="padMessage">Touch &amp; explore</span><span class="pad-corner" aria-hidden="true">XY / SYNTH</span>
         </div>
       </div>
       <div class="pitch-axis"><span>← Lower pitch</span><span>Higher pitch →</span></div>
       <p id="instructions" class="instructions">Hold a finger or mouse button on the pad, then drag. Lift to let the sound fade.</p>
+      <p id="instrumentInfo" class="instrument-info"></p>
       <div class="settings">
-        <label for="wave">Voice<select id="wave"><option value="sine">Pure · sine</option><option value="triangle">Soft · triangle</option><option value="sawtooth">Warm · sawtooth</option></select></label>
+        <label for="wave">Voice<select id="wave"><option value="steel-drum">Steel drum</option><option value="sine">Pure · sine</option><option value="triangle">Soft · triangle</option><option value="sawtooth">Warm · sawtooth</option></select></label>
         <label for="range">Pitch range<select id="range"><option value="low">Low · 55–440 Hz</option><option value="mid" selected>Mid · 110–880 Hz</option><option value="high">High · 220–1760 Hz</option></select></label>
+        <label for="root">Root note<select id="root"></select></label>
+        <label for="scale">Scale<select id="scale"></select></label>
+        <label for="sustain">Drum sustain<select id="sustain"><option value="0.6">Short · 0.6 seconds</option><option value="1.4" selected>Natural · 1.4 seconds</option><option value="2.8">Long · 2.8 seconds</option></select></label>
         <label class="volume" for="volume">Master volume <output id="volumeValue" for="volume">30%</output><input id="volume" type="range" min="0" max="100" step="1" value="30"></label>
       </div>
       <div class="bottom-row"><p id="keyboardHelp">Keyboard play · hold Space or Enter, then use the arrow keys to move. Release to stop.</p><button id="stop" type="button">Stop sound</button></div>
@@ -32,6 +36,6 @@
     </section>
     <footer>Move slowly. Listen closely.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=1"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=2"></script>
 </body>
 </html>
