@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Play a gentle touch synthesizer. Drag across the XY pad to change pitch, brightness, and volume.">
   <title>Still • Sound Pad</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=5">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=6">
 </head>
 <body data-app="sound-pad">
   <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a><a href="../chiptunes/">Chiptunes</a><a href="../strings/">Guitar &amp; Ukulele</a><a href="../handpan/">Handpan</a><a href="../sequencer/">Chiptune Studio</a><a href="../sudoku/">Sudoku</a><a href="../2048/">2048</a><a href="../chess/">Chess</a><a href="../drums/">Drum Studio</a><a href="../piano/">Piano</a></nav>
@@ -13,7 +13,7 @@
     <header><span class="eyebrow">STILL / PLAY BY FEEL</span><h1>A sound at your fingertips.</h1><p>A theremin-inspired XY pad. Touch, hold, and glide to find a sound of your own.</p></header>
     <section class="instrument" aria-label="Touch synthesizer">
       <div class="readouts"><div><span>Note</span><strong id="note">C5</strong></div><div><span>Pitch</span><strong id="pitch">523 Hz</strong></div><div><span>Tone</span><strong id="tone">Balanced</strong></div><span class="badge" id="playing">Ready</span></div>
-      <div class="pad-wrap">
+      <div class="hold-controls"><label class="hold-toggle"><input id="hold" type="checkbox" aria-describedby="holdHelp">Hold sound after release</label><p id="holdHelp"></p></div><div class="pad-wrap">
         <span class="vertical-label">Brighter &amp; louder ↑</span>
         <div id="pad" class="pad" tabindex="0" role="group" aria-label="Sound pad" aria-describedby="instructions keyboardHelp">
           <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><canvas id="trailCanvas" class="trail-canvas" aria-hidden="true"></canvas><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div><div id="malletVisual" class="mallet-visual" aria-hidden="true"><span class="mallet-handle"></span><span class="mallet-head"></span></div>
@@ -23,13 +23,13 @@
       <div class="pitch-axis"><span>← Lower pitch</span><span>Higher pitch →</span></div><div class="trail-controls"><label class="trail-toggle"><input id="trail" type="checkbox" checked>Leave a trail</label><label class="trail-length" for="trailDuration">Trail length<select id="trailDuration"><option value="1">Short · 1 second</option><option value="3" selected>Gentle · 3 seconds</option><option value="6">Long · 6 seconds</option></select></label><button id="clearTrail" type="button">Clear trail</button></div>
       <p id="instructions" class="instructions">Hold a finger or mouse button on the pad, then drag. Lift to let the sound fade.</p>
       <p id="instrumentInfo" class="instrument-info"></p>
-      <div class="controls instrument-modes"><button id="steelMode" type="button" aria-pressed="true">Steel drum</button><button id="synthMode" type="button" aria-pressed="false">Synth pad</button><a href="../handpan/">Circular handpan ↗</a></div><div class="settings">
+      <div class="controls instrument-modes"><button id="synthMode" type="button" aria-pressed="true">Synth pad · free pitch</button><button id="steelMode" type="button" aria-pressed="false">Steel drum</button><a href="../handpan/">Circular handpan ↗</a></div><div class="settings">
         <label for="wave">Synth voice<select id="wave"><option value="sine">Pure · sine</option><option value="triangle">Soft · triangle</option><option value="sawtooth">Warm · sawtooth</option></select></label>
         <label for="range">Pitch range<select id="range"><option value="low">Low · 55–440 Hz</option><option value="mid" selected>Mid · 110–880 Hz</option><option value="high">High · 220–1760 Hz</option></select></label>
-        <label for="root">Root note<select id="root"></select></label>
-        <label for="scale">Scale<select id="scale"></select></label>
-        <label for="sustain">Drum sustain<select id="sustain"><option value="0.6">Short · 0.6 seconds</option><option value="1.4" selected>Natural · 1.4 seconds</option><option value="2.8">Long · 2.8 seconds</option></select></label>
-        <label for="mallet">Mallet<select id="mallet" aria-describedby="malletInfo"><option value="soft">Soft · mellow</option><option value="rubber" selected>Rubber · balanced</option><option value="wood">Wood · bright</option></select></label>
+        <label class="drum-setting" for="root">Drum root<select id="root"></select></label>
+        <label class="drum-setting" for="scale">Drum scale<select id="scale"></select></label>
+        <label class="drum-setting" for="sustain">Drum sustain<select id="sustain"><option value="0.6">Short · 0.6 seconds</option><option value="1.4" selected>Natural · 1.4 seconds</option><option value="2.8">Long · 2.8 seconds</option></select></label>
+        <label class="drum-setting" for="mallet">Mallet<select id="mallet" aria-describedby="malletInfo"><option value="soft">Soft · mellow</option><option value="rubber" selected>Rubber · balanced</option><option value="wood">Wood · bright</option></select></label>
         <label class="volume" for="volume">Master volume <output id="volumeValue" for="volume">30%</output><input id="volume" type="range" min="0" max="100" step="1" value="30"></label>
       </div>
       <p id="malletInfo" class="mallet-info"></p>
@@ -38,6 +38,6 @@
     </section>
     <footer>Move slowly. Listen closely.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=5"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=6"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@ import {PadTrail} from './trail.js?v=1';
 const $ = id => document.getElementById(id);
 const pad = $('pad');
 const key = 'still-sound-pad-v1';
-const settings = {wave: 'steel-drum', synthWave: 'sine', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4, mallet: 'rubber', trail: true, trailDuration: 3};
+const settings = {wave: 'sine', synthWave: 'sine', range: 'mid', volume: 30, root: 0, scale: 'continuous', drumScale: 'majorPentatonic', hold: false, freeGlideVersion: 1, sustain: 1.4, mallet: 'rubber', trail: true, trailDuration: 3};
 const position = {x: 0.5, y: 0.5};
 const audio = new PadAudio(() => {
   const mallet = $('malletVisual');
@@ -26,20 +26,22 @@ let storageAvailable = true;
 
 try {
   const saved = JSON.parse(localStorage.getItem(key));
-  if (['sine', 'triangle', 'sawtooth', 'steel-drum'].includes(saved?.wave)) settings.wave = saved.wave;
-  if (Object.hasOwn(RANGES, saved?.range)) settings.range = saved.range;
-  if (Number.isFinite(saved?.volume) && saved.volume >= 0 && saved.volume <= 100) settings.volume = saved.volume;
-  if (Number.isInteger(saved?.root) && saved.root >= 0 && saved.root < 12) settings.root = saved.root;
-  if (Object.hasOwn(SCALES, saved?.scale)) settings.scale = saved.scale;
-  else if (saved?.wave && saved.wave !== 'steel-drum') settings.scale = 'continuous';
-  if ([0.6, 1.4, 2.8].includes(saved?.sustain)) settings.sustain = saved.sustain;
-  if (Object.hasOwn(MALLETS, saved?.mallet)) settings.mallet = saved.mallet;
-  if (typeof saved?.trail === 'boolean') settings.trail = saved.trail;
-  if ([1,3,6].includes(saved?.trailDuration)) settings.trailDuration = saved.trailDuration;
-} catch { storageAvailable = false; }
-if (settings.wave !== 'steel-drum') settings.synthWave = settings.wave;
-try { const old = JSON.parse(localStorage.getItem(key)); if (['sine','triangle','sawtooth'].includes(old?.synthWave)) settings.synthWave=old.synthWave; } catch {}
-if (settings.wave === 'steel-drum' && settings.scale === 'continuous') settings.scale = 'majorPentatonic';
+  const synths=['sine','triangle','sawtooth'];
+  if(synths.includes(saved?.synthWave))settings.synthWave=saved.synthWave;
+  else if(synths.includes(saved?.wave))settings.synthWave=saved.wave;
+  settings.wave=saved?.freeGlideVersion===1&&saved.wave==='steel-drum'?'steel-drum':settings.synthWave;
+  if(Object.hasOwn(RANGES,saved?.range))settings.range=saved.range;
+  if(Number.isFinite(saved?.volume)&&saved.volume>=0&&saved.volume<=100)settings.volume=saved.volume;
+  if(Number.isInteger(saved?.root)&&saved.root>=0&&saved.root<12)settings.root=saved.root;
+  const drumScale=saved?.drumScale||saved?.scale;
+  if(drumScale!=='continuous'&&Object.hasOwn(SCALES,drumScale))settings.drumScale=drumScale;
+  settings.scale=settings.wave==='steel-drum'?settings.drumScale:'continuous';
+  if([.6,1.4,2.8].includes(saved?.sustain))settings.sustain=saved.sustain;
+  if(Object.hasOwn(MALLETS,saved?.mallet))settings.mallet=saved.mallet;
+  if(typeof saved?.trail==='boolean')settings.trail=saved.trail;
+  if([1,3,6].includes(saved?.trailDuration))settings.trailDuration=saved.trailDuration;
+  if(typeof saved?.hold==='boolean')settings.hold=saved.hold;
+} catch {storageAvailable=false;}
 
 const trail = new PadTrail($('trailCanvas'), {enabled: settings.trail, duration: settings.trailDuration});
 
@@ -53,16 +55,19 @@ function render() {
   pad.style.setProperty('--x', `${position.x * 100}%`);
   pad.style.setProperty('--y', `${position.y * 100}%`);
   pad.dataset.playing = String(playing);
-  $('pitch').textContent = `${Math.round(sound.frequency)} Hz`;
+  $('pitch').textContent = `${sound.frequency.toFixed(1)} Hz`;
   $('note').textContent = sound.note;
   $('tone').textContent = sound.brightness > 0.66 ? 'Bright' : sound.brightness < 0.33 ? 'Mellow' : 'Balanced';
-  $('playing').textContent = playing ? 'Playing' : 'Ready';
+  $('playing').textContent = playing ? (settings.hold&&settings.wave!=='steel-drum'&&pointer===null&&keyboardKey===null?'Frequency held':'Playing') : 'Ready';
   $('volumeValue').textContent = `${settings.volume}%`;
   for (const lane of $('noteLanes').children) lane.dataset.active = String(Number(lane.dataset.midi) === sound.midi);
 }
 
 function renderInstrument() {
   const drum = settings.wave === 'steel-drum';
+  document.querySelector('.instrument').dataset.mode=drum?'drum':'synth';
+  $('hold').disabled=drum;
+  $('holdHelp').textContent=drum?'Drum notes ring out naturally. Hold sound is available in the continuous synth pad.':'With Hold sound on, lift your finger to keep this frequency playing. Touch another spot to change it. Stop sound ends it.';
   $('steelMode').setAttribute('aria-pressed',String(drum)); $('synthMode').setAttribute('aria-pressed',String(!drum)); $('wave').disabled=drum; $('wave').value=settings.synthWave;
   const notes = notesFor(settings);
   $('noteLanes').replaceChildren();
@@ -85,16 +90,17 @@ function renderInstrument() {
     rubber: 'Rubber mallet · a balanced steel-drum strike with a natural ring.',
     wood: 'Wood mallet · a sharper, brighter strike with a shorter ring.'
   }[settings.mallet] : 'Mallets shape the steel-drum voice. Choose Steel drum to use them.';
-  $('root').disabled = settings.scale === 'continuous' && !drum;
+  $('root').disabled = !drum;
+  $('scale').disabled = !drum;
   $('scale').querySelector('[value="continuous"]').disabled = drum;
   $('instrumentInfo').textContent = drum
     ? `${ROOTS[settings.root]} ${SCALES[settings.scale].name.toLowerCase()} · Tap to strike. Drag across note lanes to play a melody. Higher touches strike brighter and louder.`
     : settings.scale === 'continuous' ? 'Free pitch glide. Move horizontally to bend the pitch.' : `${ROOTS[settings.root]} ${SCALES[settings.scale].name.toLowerCase()} · Pitch snaps to the labeled notes.`;
-  $('instructions').textContent = drum ? 'Tap a note or drag across the pad. Steel-drum notes ring out naturally after release. Stop sound silences every note.' : 'Hold a finger or mouse button on the pad, then drag. Lift to let the sound fade.';
+  $('instructions').textContent = drum ? 'Tap a note or drag across the pad. Steel-drum notes ring out naturally after release. Stop sound silences every note.' : (settings.hold?'Touch and drag to explore any frequency. Lift to hold the last sound; touch again to change it.':'Hold a finger or mouse button on the pad, then drag through any frequency. Lift to let the sound fade.');
   $('padMessage').textContent = drum ? 'Tap a note. Let it ring.' : 'Touch & explore';
   $('keyboardHelp').textContent = drum
     ? 'Keyboard play · hold Space or Enter and use Left/Right to strike adjacent notes. Up/Down changes strike strength. Release lets the drum ring.'
-    : 'Keyboard play · hold Space or Enter, then use the arrow keys to move. Release to stop.';
+    : settings.hold ? 'Keyboard play · hold Space or Enter and use the arrows. Release to keep the frequency playing. Stop sound ends it.' : 'Keyboard play · hold Space or Enter, then use the arrow keys to move. Release to stop.';
   for (const option of $('range').options) {
     option.textContent = drum
       ? `${{low: 'Low', mid: 'Mid', high: 'High'}[option.value]} · ${ROOTS[settings.root]}${{low: 3, mid: 4, high: 5}[option.value]}–${ROOTS[settings.root]}${{low: 5, mid: 6, high: 7}[option.value]}`
@@ -104,11 +110,11 @@ function renderInstrument() {
 }
 
 async function play() {
-  if (playing) return;
+  if (playing) {render();return;}
   const request = ++playback;
   playing = true;
   render();
-  $('status').textContent = settings.wave === 'steel-drum' ? 'Tap and glide across the notes. Let each strike ring.' : 'Glide to change the sound. Release to stop.';
+  $('status').textContent = settings.wave === 'steel-drum' ? 'Tap and glide across the notes. Let each strike ring.' : (settings.hold?'Glide through any frequency. Lift to keep the last sound playing.':'Glide through any frequency. Release to stop.');
   try {
     const started = await audio.start(settings, position);
     if (started) audio.update(settings, position);
@@ -129,6 +135,13 @@ function stop(hard = false) {
   else audio.release();
   render();
   $('status').textContent = hard ? 'All sound stopped.' : settings.wave === 'steel-drum' ? 'The note is ringing out. Tap to strike again.' : 'Sound released. Touch the pad to play again.';
+}
+
+function releaseInput() {
+  pointer=null;keyboardKey=null;trail.end();
+  if(settings.hold&&playing&&settings.wave!=='steel-drum'){
+    render();$('status').textContent='Holding '+soundAt(position.x,position.y,settings).frequency.toFixed(1)+' Hz. Touch to change it, or press Stop sound.';
+  }else stop();
 }
 
 function move(event) {
@@ -157,10 +170,10 @@ pad.addEventListener('pointermove', event => {
   }
 });
 for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
-  pad.addEventListener(eventName, event => { if (event.pointerId === pointer) stop(); });
+  pad.addEventListener(eventName, event => { if (event.pointerId === pointer) {if(eventName==='pointerup')releaseInput();else stop(true);} });
 }
 // Also release if the pointer ends outside the pad before capture is established.
-window.addEventListener('pointerup', event => { if (event.pointerId === pointer) stop(); });
+window.addEventListener('pointerup', event => { if (event.pointerId === pointer) releaseInput(); });
 
 pad.addEventListener('keydown', event => {
   if ([' ', 'Enter'].includes(event.key)) {
@@ -184,8 +197,8 @@ pad.addEventListener('keydown', event => {
   audio.update(settings, position);
   render();
 });
-window.addEventListener('keyup', event => { if (event.key === keyboardKey) stop(); });
-pad.addEventListener('blur', () => stop());
+window.addEventListener('keyup', event => { if (event.key === keyboardKey) releaseInput(); });
+pad.addEventListener('blur', () => {if(pointer!==null||keyboardKey!==null)releaseInput();else if(!settings.hold||settings.wave==='steel-drum')stop();});
 window.addEventListener('blur', () => stop(true));
 window.addEventListener('pagehide', () => stop(true));
 document.addEventListener('visibilitychange', () => { if (document.hidden) stop(true); });
@@ -202,6 +215,7 @@ for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain', 'mallet
   $(id).addEventListener('input', () => {
     settings[id] = ['volume', 'root', 'sustain'].includes(id) ? Number($(id).value) : $(id).value;
     if(id==='wave')settings.synthWave=settings.wave;
+    if(id==='scale'&&settings.scale!=='continuous')settings.drumScale=settings.scale;
     if (settings.wave === 'steel-drum' && settings.scale === 'continuous') {
       settings.scale = 'majorPentatonic'; $('scale').value = settings.scale;
     }
@@ -211,7 +225,9 @@ for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain', 'mallet
     $('status').textContent = storageAvailable ? 'Sound settings saved in this browser.' : 'Settings applied. Browser storage is unavailable.';
   });
 }
-for(const [id,wave] of [['steelMode','steel-drum'],['synthMode',null]]) $(id).addEventListener('click',()=>{stop(true);settings.wave=wave||settings.synthWave;if(wave&&settings.scale==='continuous'){settings.scale='majorPentatonic';$('scale').value=settings.scale;}save();renderInstrument();});
+for(const [id,wave] of [['steelMode','steel-drum'],['synthMode',null]]) $(id).addEventListener('click',()=>{
+  stop(true);settings.wave=wave||settings.synthWave;settings.scale=wave?settings.drumScale:'continuous';$('scale').value=settings.scale;save();renderInstrument();
+});
 renderInstrument();
 if (!storageAvailable) $('status').textContent = 'Ready to play. Browser storage is unavailable, so settings may not persist.';
 
@@ -222,3 +238,7 @@ $('trailDuration').addEventListener('change',()=>{settings.trailDuration=Number(
 $('clearTrail').addEventListener('click',()=>trail.clear());
 window.addEventListener('pagehide',()=>trail.clear());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)trail.clear();});
+
+$('hold').checked=settings.hold;
+$('hold').addEventListener('change',()=>{settings.hold=$('hold').checked;if(!settings.hold&&playing&&pointer===null&&keyboardKey===null)stop(true);save();renderInstrument();});
+save();
