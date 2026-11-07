@@ -38,3 +38,10 @@ The sound mixer synthesizes its sound using browser audio APIs; the wallpaper ge
 - Source: https://github.com/jhlywa/chess.js
 - License: BSD-2-Clause. The complete upstream copyright and license notice is preserved in [chess/vendor/LICENSE](chess/vendor/LICENSE).
 - The interface and casual computer opponent are project-owned MIT code.
+
+## Pearl Master Studio acoustic drum recordings
+
+- Used by `drums/`: eight unmodified WAV samples from **Pearl Master Studio Pack 1 by enoe**, via https://oramics.github.io/sampled/DRUMS/pearl-master-studio/ .
+- License: Creative Commons Attribution 3.0 Unported (CC BY 3.0), https://creativecommons.org/licenses/by/3.0/ .
+- Bundled files, source URLs, and changes at playback/export: [drums/samples/NOTICE.md](drums/samples/NOTICE.md). These recordings retain their own license.
+- App credits identify the author, pack, source, and license. Downloaded projects and WAV INFO comments carry attribution and an indication of arrangement/mixing.
