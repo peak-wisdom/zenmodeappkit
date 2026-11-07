@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Trace pale mandala outlines, color every petal, and download your own high-resolution artwork.">
   <title>Still • Mandala Studio</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=1">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=2">
 </head>
 <body data-app="mandala">
   <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="./" aria-current="page">Mandala</a></nav>
@@ -19,6 +19,7 @@
       </section>
       <aside class="tools" aria-label="Drawing tools">
         <section><h2>Choose your pattern</h2><div id="patterns" class="pattern-list"></div></section>
+        <section class="generator"><h2>Discover a new pattern</h2><button id="newPattern" class="primary" type="button">New pattern ✧</button><form id="generatorForm"><label for="seed">Pattern seed</label><input id="seed" type="text" maxlength="64" required value="still-garden" autocomplete="off" spellcheck="false"><div class="generator-options"><label for="detail">Detail<select id="detail"><option value="simple">Simple</option><option value="balanced" selected>Balanced</option><option value="intricate">Intricate</option></select></label><label for="symmetry">Symmetry<select id="symmetry"><option value="auto">Surprise me</option><option value="6">6-fold</option><option value="8">8-fold</option><option value="10">10-fold</option><option value="12">12-fold</option><option value="16">16-fold</option></select></label></div><button type="submit">Create from seed</button></form><p class="note">The same seed, detail, and symmetry recreate the same pattern. New pattern uses a fresh seed with your selected settings.</p><label for="recent">Recent generated designs</label><select id="recent"><option value="">Choose a saved design</option></select><p class="note">Your latest 12 generated designs and their colors save in this browser. Download older artwork before creating more.</p></section>
         <section><h2>Make your mark</h2><div class="mode-buttons" role="group" aria-label="Drawing mode"><button type="button" data-mode="trace" aria-pressed="true">① Trace</button><button type="button" data-mode="color" aria-pressed="false">② Color</button><button type="button" data-mode="erase" aria-pressed="false">Erase color</button></div><p class="note">Trace individual outlines, or tap inside a shape to trace its border. In Color mode, tap inside a shape to fill it. Keyboard users can focus shapes and press Enter or Space.</p></section>
         <section><label for="palette">Color palette</label><select id="palette"></select><div id="swatches" class="swatches" role="group" aria-label="Palette colors"></div><label class="custom-color" for="color">Your color <input id="color" type="color" value="#6a9c78"></label></section>
         <section><button id="fillAll" class="primary" type="button">Color the whole mandala</button><p class="note">Fill every shape with the selected palette and trace every outline. Press again for another arrangement.</p><label class="check" for="amoled"><input id="amoled" type="checkbox"> AMOLED · pure black background</label><p class="note">AMOLED uses bright traced outlines on black. Your colors stay in place.</p></section>
@@ -26,8 +27,8 @@
       </aside>
     </div>
     <p id="status" role="status">Your progress is saved in this browser, including after refresh.</p>
-    <footer>Four patterns. A moment of your own.</footer>
+    <footer>Four classics and a world of generated patterns. A moment of your own.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=1"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=2"></script>
 </body>
 </html>

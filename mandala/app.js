@@ -1,16 +1,32 @@
 // SPDX-License-Identifier: MIT
-import {PATTERNS, PALETTES, makePattern, drawingSVG} from './patterns.js?v=1';
+import {PATTERNS, PALETTES, makePattern, drawingSVG, normalizeGenerator, generatorKey, generatedPattern} from './patterns.js?v=2';
 
 const $ = id => document.getElementById(id);
 const storageKey = 'still-mandala-v1';
 const validColor = value => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
 const blankDrawing = () => ({fills: {}, lines: {}, arrangement: 0});
-const state = {pattern: 'lotus', palette: 'meadow', color: '#6a9c78', amoled: false, drawings: {}};
+const state = {
+  pattern: 'lotus', palette: 'meadow', color: '#6a9c78', amoled: false, drawings: {},
+  generator: {seed: 'still-garden', detail: 'balanced', symmetry: 'auto'}, recent: []
+};
 const histories = {};
 let mode = 'trace';
 let shapes = [];
 let exporting = false;
 let storageAvailable = true;
+
+function restoreDrawing(previous, patternShapes) {
+  const restored = blankDrawing();
+  for (const shape of patternShapes) {
+    if (validColor(previous?.fills?.[shape.id])) restored.fills[shape.id] = previous.fills[shape.id];
+    shape.edges.forEach((edge, index) => {
+      const lineId = `${shape.id}:${index}`;
+      if (previous?.lines?.[lineId] === true) restored.lines[lineId] = true;
+    });
+  }
+  if (Number.isInteger(previous?.arrangement)) restored.arrangement = Math.abs(previous.arrangement % 6);
+  return restored;
+}
 
 function load() {
   try {
@@ -23,16 +39,29 @@ function load() {
     for (const id of Object.keys(PATTERNS)) {
       const previous = saved.drawings?.[id];
       if (!previous || typeof previous !== 'object') continue;
-      const drawing = blankDrawing();
-      for (const shape of makePattern(id)) {
-        if (validColor(previous.fills?.[shape.id])) drawing.fills[shape.id] = previous.fills[shape.id];
-        shape.edges.forEach((edge, index) => {
-          const lineId = `${shape.id}:${index}`;
-          if (previous.lines?.[lineId] === true) drawing.lines[lineId] = true;
-        });
+      state.drawings[id] = restoreDrawing(previous, makePattern(id));
+    }
+    if (Array.isArray(saved.recent)) {
+      for (const options of saved.recent.slice(-12)) {
+        try {
+          const config = normalizeGenerator(options);
+          if (!state.recent.some(item => generatorKey(item) === generatorKey(config))) state.recent.push(config);
+        } catch { /* Ignore invalid saved generator settings. */ }
       }
-      if (Number.isInteger(previous.arrangement)) drawing.arrangement = Math.abs(previous.arrangement % 6);
-      state.drawings[id] = drawing;
+    }
+    try {
+      state.generator = normalizeGenerator(saved.generator);
+      if (saved.pattern === 'generated') {
+        state.pattern = 'generated';
+        const key = generatorKey(state.generator);
+        state.recent = state.recent.filter(item => generatorKey(item) !== key);
+        state.recent.push(state.generator);
+        state.recent = state.recent.slice(-12);
+      }
+    } catch { /* Older saved drawings have no generator settings. */ }
+    for (const config of state.recent) {
+      const key = generatorKey(config);
+      state.drawings[key] = restoreDrawing(saved.drawings?.[key], makePattern('generated', config));
     }
   } catch {
     storageAvailable = false;
@@ -49,11 +78,15 @@ function save() {
 }
 
 function drawing() {
-  return state.drawings[state.pattern];
+  return state.drawings[currentKey()];
+}
+
+function currentKey() {
+  return state.pattern === 'generated' ? generatorKey(state.generator) : state.pattern;
 }
 
 function history() {
-  return histories[state.pattern] ||= {undo: [], redo: []};
+  return histories[currentKey()] ||= {undo: [], redo: []};
 }
 
 function renderDrawing() {
@@ -99,13 +132,72 @@ function renderSwatches() {
 
 function selectPattern(id) {
   state.pattern = id;
-  state.drawings[id] ||= blankDrawing();
-  shapes = makePattern(id);
-  $('patternTitle').textContent = PATTERNS[id].name;
+  state.drawings[currentKey()] ||= blankDrawing();
+  shapes = makePattern(id, state.generator);
+  $('patternTitle').textContent = id === 'generated' ? `Generated · ${generatedPattern(state.generator).symmetry}-fold` : PATTERNS[id].name;
   for (const button of $('patterns').querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.pattern === id));
+  renderRecent();
   renderDrawing();
   save();
 }
+
+function syncGeneratorControls() {
+  $('seed').value = state.generator.seed;
+  $('detail').value = state.generator.detail;
+  $('symmetry').value = state.generator.symmetry;
+}
+
+function renderRecent() {
+  $('recent').replaceChildren();
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Choose a saved design';
+  $('recent').append(placeholder);
+  for (const config of [...state.recent].reverse()) {
+    const option = document.createElement('option');
+    option.value = generatorKey(config);
+    option.textContent = `${config.seed} · ${config.detail} · ${generatedPattern(config).symmetry}-fold`;
+    $('recent').append(option);
+  }
+  $('recent').value = state.pattern === 'generated' ? currentKey() : '';
+  $('recent').disabled = exporting || state.recent.length === 0;
+}
+
+function openGenerated(options) {
+  if (exporting) return;
+  let config;
+  try { config = normalizeGenerator(options); }
+  catch (error) { status(error.message); return; }
+  const key = generatorKey(config);
+  const restored = Boolean(state.drawings[key]);
+  state.generator = config;
+  state.recent = state.recent.filter(item => generatorKey(item) !== key);
+  state.recent.push(config);
+  if (state.recent.length > 12) {
+    const oldestKey = generatorKey(state.recent.shift());
+    delete state.drawings[oldestKey];
+    delete histories[oldestKey];
+  }
+  syncGeneratorControls();
+  selectPattern('generated');
+  setMode('trace');
+  status(restored ? 'Saved generated design reopened.' : 'A fresh seeded pattern is ready to trace.');
+}
+
+$('newPattern').addEventListener('click', () => {
+  const values = crypto.getRandomValues(new Uint32Array(2));
+  const seed = 'm-' + Array.from(values, value => value.toString(16).padStart(8, '0')).join('');
+  openGenerated({seed, detail: $('detail').value, symmetry: $('symmetry').value});
+});
+$('generatorForm').addEventListener('submit', event => {
+  event.preventDefault();
+  if (!$('generatorForm').reportValidity()) return;
+  openGenerated({seed: $('seed').value, detail: $('detail').value, symmetry: $('symmetry').value});
+});
+$('recent').addEventListener('change', () => {
+  const config = state.recent.find(item => generatorKey(item) === $('recent').value);
+  if (config) openGenerated(config);
+});
 
 function setMode(next) {
   mode = next;
@@ -181,7 +273,7 @@ $('clear').addEventListener('click', () => edit(current => {
 function travel(from, to) {
   if (exporting || !history()[from].length) return;
   history()[to].push(JSON.stringify(drawing()));
-  state.drawings[state.pattern] = JSON.parse(history()[from].pop());
+  state.drawings[currentKey()] = JSON.parse(history()[from].pop());
   save();
   renderDrawing();
   status(from === 'undo' ? 'Last change undone.' : 'Change restored.');
@@ -211,7 +303,10 @@ $('download').addEventListener('click', async () => {
     const url = URL.createObjectURL(png);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `still-mandala-${state.pattern}${state.amoled ? '-amoled' : ''}.png`;
+    const designName = state.pattern === 'generated'
+      ? `generated-${state.generator.seed.replace(/[^a-z0-9_-]/gi, '_')}-${state.generator.detail}-${state.generator.symmetry}`
+      : state.pattern;
+    link.download = `still-mandala-${designName}${state.amoled ? '-amoled' : ''}.png`;
     document.body.append(link);
     link.click();
     link.remove();
@@ -224,6 +319,7 @@ $('download').addEventListener('click', async () => {
     exporting = false;
     controls.forEach(control => { control.disabled = false; });
     $('download').textContent = 'Download PNG ↗';
+    renderRecent();
     renderDrawing();
   }
 });
@@ -247,6 +343,7 @@ for (const [id, palette] of Object.entries(PALETTES)) {
 $('palette').value = state.palette;
 $('color').value = state.color;
 $('amoled').checked = state.amoled;
+syncGeneratorControls();
 renderSwatches();
 selectPattern(state.pattern);
 setMode('trace');
