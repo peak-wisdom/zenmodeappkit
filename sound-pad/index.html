@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Play a gentle touch synthesizer. Drag across the XY pad to change pitch, brightness, and volume.">
   <title>Still • Sound Pad</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=4">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=5">
 </head>
 <body data-app="sound-pad">
   <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a><a href="../chiptunes/">Chiptunes</a><a href="../strings/">Guitar &amp; Ukulele</a><a href="../handpan/">Handpan</a><a href="../sequencer/">Chiptune Studio</a><a href="../sudoku/">Sudoku</a><a href="../2048/">2048</a><a href="../chess/">Chess</a><a href="../drums/">Drum Studio</a><a href="../piano/">Piano</a></nav>
@@ -16,11 +16,11 @@
       <div class="pad-wrap">
         <span class="vertical-label">Brighter &amp; louder ↑</span>
         <div id="pad" class="pad" tabindex="0" role="group" aria-label="Sound pad" aria-describedby="instructions keyboardHelp">
-          <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div><div id="malletVisual" class="mallet-visual" aria-hidden="true"><span class="mallet-handle"></span><span class="mallet-head"></span></div>
+          <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><canvas id="trailCanvas" class="trail-canvas" aria-hidden="true"></canvas><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div><div id="malletVisual" class="mallet-visual" aria-hidden="true"><span class="mallet-handle"></span><span class="mallet-head"></span></div>
           <span class="pad-message" id="padMessage">Touch &amp; explore</span><span class="pad-corner" aria-hidden="true">XY / SYNTH</span>
         </div>
       </div>
-      <div class="pitch-axis"><span>← Lower pitch</span><span>Higher pitch →</span></div>
+      <div class="pitch-axis"><span>← Lower pitch</span><span>Higher pitch →</span></div><div class="trail-controls"><label class="trail-toggle"><input id="trail" type="checkbox" checked>Leave a trail</label><label class="trail-length" for="trailDuration">Trail length<select id="trailDuration"><option value="1">Short · 1 second</option><option value="3" selected>Gentle · 3 seconds</option><option value="6">Long · 6 seconds</option></select></label><button id="clearTrail" type="button">Clear trail</button></div>
       <p id="instructions" class="instructions">Hold a finger or mouse button on the pad, then drag. Lift to let the sound fade.</p>
       <p id="instrumentInfo" class="instrument-info"></p>
       <div class="controls instrument-modes"><button id="steelMode" type="button" aria-pressed="true">Steel drum</button><button id="synthMode" type="button" aria-pressed="false">Synth pad</button><a href="../handpan/">Circular handpan ↗</a></div><div class="settings">
@@ -38,6 +38,6 @@
     </section>
     <footer>Move slowly. Listen closely.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=4"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=5"></script>
 </body>
 </html>

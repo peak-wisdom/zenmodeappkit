@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 import {PadAudio, RANGES, ROOTS, SCALES, MALLETS, notesFor, clamp, soundAt} from './audio.js?v=3';
 
+import {PadTrail} from './trail.js?v=1';
+
 const $ = id => document.getElementById(id);
 const pad = $('pad');
 const key = 'still-sound-pad-v1';
-const settings = {wave: 'steel-drum', synthWave: 'sine', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4, mallet: 'rubber'};
+const settings = {wave: 'steel-drum', synthWave: 'sine', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4, mallet: 'rubber', trail: true, trailDuration: 3};
 const position = {x: 0.5, y: 0.5};
 const audio = new PadAudio(() => {
   const mallet = $('malletVisual');
@@ -32,10 +34,14 @@ try {
   else if (saved?.wave && saved.wave !== 'steel-drum') settings.scale = 'continuous';
   if ([0.6, 1.4, 2.8].includes(saved?.sustain)) settings.sustain = saved.sustain;
   if (Object.hasOwn(MALLETS, saved?.mallet)) settings.mallet = saved.mallet;
+  if (typeof saved?.trail === 'boolean') settings.trail = saved.trail;
+  if ([1,3,6].includes(saved?.trailDuration)) settings.trailDuration = saved.trailDuration;
 } catch { storageAvailable = false; }
 if (settings.wave !== 'steel-drum') settings.synthWave = settings.wave;
 try { const old = JSON.parse(localStorage.getItem(key)); if (['sine','triangle','sawtooth'].includes(old?.synthWave)) settings.synthWave=old.synthWave; } catch {}
 if (settings.wave === 'steel-drum' && settings.scale === 'continuous') settings.scale = 'majorPentatonic';
+
+const trail = new PadTrail($('trailCanvas'), {enabled: settings.trail, duration: settings.trailDuration});
 
 function save() {
   try { localStorage.setItem(key, JSON.stringify(settings)); }
@@ -118,6 +124,7 @@ function stop(hard = false) {
   pointer = null;
   keyboardKey = null;
   playing = false;
+  trail.end();
   if (hard) audio.stop();
   else audio.release();
   render();
@@ -128,6 +135,7 @@ function move(event) {
   const bounds = pad.getBoundingClientRect();
   position.x = clamp((event.clientX - bounds.left) / bounds.width);
   position.y = clamp((event.clientY - bounds.top) / bounds.height);
+  trail.add(position.x,position.y);
   audio.update(settings, position);
   render();
 }
@@ -142,7 +150,11 @@ pad.addEventListener('pointerdown', event => {
   play();
 });
 pad.addEventListener('pointermove', event => {
-  if (event.pointerId === pointer) move(event);
+  if (event.pointerId === pointer) {
+    const bounds = pad.getBoundingClientRect();
+    for (const sample of event.getCoalescedEvents?.() || []) trail.add(clamp((sample.clientX-bounds.left)/bounds.width),clamp((sample.clientY-bounds.top)/bounds.height));
+    move(event);
+  }
 });
 for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
   pad.addEventListener(eventName, event => { if (event.pointerId === pointer) stop(); });
@@ -155,6 +167,7 @@ pad.addEventListener('keydown', event => {
     event.preventDefault();
     if (pointer === null && keyboardKey === null) {
       keyboardKey = event.key;
+      trail.begin(position.x,position.y);
       play();
     }
     return;
@@ -167,6 +180,7 @@ pad.addEventListener('keydown', event => {
   const step = notes.length ? 1 / (notes.length - 1) : 0.025;
   position.x = clamp(position.x + Math.sign(delta[0]) * step);
   position.y = clamp(position.y + delta[1]);
+  if (playing) trail.add(position.x,position.y);
   audio.update(settings, position);
   render();
 });
@@ -200,3 +214,11 @@ for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain', 'mallet
 for(const [id,wave] of [['steelMode','steel-drum'],['synthMode',null]]) $(id).addEventListener('click',()=>{stop(true);settings.wave=wave||settings.synthWave;if(wave&&settings.scale==='continuous'){settings.scale='majorPentatonic';$('scale').value=settings.scale;}save();renderInstrument();});
 renderInstrument();
 if (!storageAvailable) $('status').textContent = 'Ready to play. Browser storage is unavailable, so settings may not persist.';
+
+$('trail').checked=settings.trail;$('trailDuration').value=settings.trailDuration;
+$('trailDuration').disabled=!settings.trail;
+$('trail').addEventListener('change',()=>{settings.trail=$('trail').checked;trail.configure(settings.trail,settings.trailDuration);$('trailDuration').disabled=!settings.trail;save();});
+$('trailDuration').addEventListener('change',()=>{settings.trailDuration=Number($('trailDuration').value);trail.configure(settings.trail,settings.trailDuration);save();});
+$('clearTrail').addEventListener('click',()=>trail.clear());
+window.addEventListener('pagehide',()=>trail.clear());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)trail.clear();});
