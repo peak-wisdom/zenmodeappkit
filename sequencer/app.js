@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: MIT
 import{ChipPlayer,renderSong}from '../chiptunes/audio.js?v=3';
 import{NotePreview}from '../chiptunes/tones.js?v=1';
-import{PianoKeyboard}from '../piano/keyboard.js?v=1';
 import{encodeWav}from '../chiptunes/music.js?v=1';
 import{validProject,songFor,blank}from './model.js?v=2';
 const $=id=>document.getElementById(id),key='still-sequencer-v1',names=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 let project=blank(),selected=-1,undo=[],redo=[],gesture=null,volume=30;
-try{const s=JSON.parse(localStorage.getItem(key));if(validProject(s?.project))project=s.project;if(Number.isFinite(s?.volume)&&s.volume>=0&&s.volume<=100)volume=s.volume;if(['square','pulse','triangle','piano'].includes(s?.voice))$('voice').value=s.voice;if(typeof s?.loop==='boolean')$('loop').checked=s.loop;}catch{}
+try{const s=JSON.parse(localStorage.getItem(key));if(validProject(s?.project))project=s.project;if(Number.isFinite(s?.volume)&&s.volume>=0&&s.volume<=100)volume=s.volume;if(['square','pulse','triangle'].includes(s?.voice))$('voice').value=s.voice;if(typeof s?.loop==='boolean')$('loop').checked=s.loop;}catch{}
 const player=new ChipPlayer(()=>{$('status').textContent='Playback finished.';transport();},error=>{$('status').textContent=error.message;transport();});
 const preview=new NotePreview(transport,error=>{$('status').textContent=error.message;});
-const keyboard=new PianoKeyboard($('piano'),{onPress:(id,midi)=>{preview.press('piano-'+id,midi,$('voice').value,volume);$('heard').textContent=name(midi);},onRelease:id=>preview.release('piano-'+id),onReset:()=>preview.stop()});
 const name=m=>names[m%12]+(Math.floor(m/12)-1);
 function settings(){return{bpm:project.bpm,volume,loop:$('loop').checked,style:'arcade',tracks:{lead:true,bass:true,arp:true,drums:false}};}
 function save(){try{localStorage.setItem(key,JSON.stringify({project,volume,voice:$('voice').value,loop:$('loop').checked}));}catch{$('status').textContent='Storage unavailable. Download your project to keep it.';}}
 function remember(before){undo.push(structuredClone(before));if(undo.length>40)undo.shift();redo=[];}
-function stop(){player.stop();preview.stop();keyboard.reset();transport();}
+function stop(){player.stop();preview.stop();transport();}
 function transport(){$('play').disabled=player.playing||!project.notes.length;$('stop').disabled=!player.playing&&!preview.sounding;}
 function hear(note,id='roll') {preview.press(id,note.midi,note.voice,volume);$('heard').textContent=name(note.midi);}
 function draw(){
@@ -57,12 +55,12 @@ function remove(){if(selected<0)return;stop();const before=structuredClone(proje
 $('delete').addEventListener('click',remove);$('clear').addEventListener('click',()=>{if(!project.notes.length)return;stop();const before=structuredClone(project);project.notes=[];selected=-1;changed(before);});
 for(const id of['undo','redo'])$(id).addEventListener('click',()=>{const from=id==='undo'?undo:redo,to=id==='undo'?redo:undo;if(!from.length)return;stop();to.push(structuredClone(project));project=from.pop();selected=-1;save();draw();});
 $('bars').addEventListener('change',()=>{stop();const before=structuredClone(project);project.steps=Number($('bars').value)*16;project.notes=project.notes.filter(n=>n.step<project.steps).map(n=>({...n,duration:Math.min(n.duration,project.steps-n.step)}));selected=-1;changed(before);});
-$('bpm').addEventListener('input',()=>{stop();project.bpm=Number($('bpm').value);save();$('bpmValue').textContent=project.bpm+' BPM';});$('volume').addEventListener('input',()=>{volume=Number($('volume').value);player.setVolume(volume);preview.setVolume(volume);save();});$('loop').addEventListener('change',()=>{stop();save();});$('voice').addEventListener('change',()=>{preview.stop();keyboard.reset();save();});
+$('bpm').addEventListener('input',()=>{stop();project.bpm=Number($('bpm').value);save();$('bpmValue').textContent=project.bpm+' BPM';});$('volume').addEventListener('input',()=>{volume=Number($('volume').value);player.setVolume(volume);preview.setVolume(volume);save();});$('loop').addEventListener('change',()=>{stop();save();});$('voice').addEventListener('change',()=>{preview.stop();save();});
 $('play').addEventListener('click',async()=>{if(!project.notes.length)return;stop();try{await player.start(songFor(project),settings());$('status').textContent='Playing your tune.';transport();}catch(e){$('status').textContent=e.message;}});$('stop').addEventListener('click',stop);
 function download(data,type,filename){const url=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 $('saveProject').addEventListener('click',()=>download(JSON.stringify(project,null,2),'application/json','still-chiptune.json'));
 $('loadProject').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>1024*1024)throw Error('Project is too large.');const p=JSON.parse(await file.text());if(!validProject(p))throw Error('Choose a valid Still Chiptune Studio project.');stop();const before=project;project={format:p.format,version:1,steps:p.steps,bpm:p.bpm,notes:p.notes.map(n=>({step:n.step,duration:n.duration,midi:n.midi,voice:n.voice}))};selected=-1;changed(before);}catch(error){$('status').textContent=error.message;}e.target.value='';});
 $('saveWav').addEventListener('click',async()=>{stop();$('saveWav').disabled=true;$('status').textContent='Rendering WAV…';try{const buffer=await renderSong(songFor(project),settings());download(encodeWav(buffer),'audio/wav','still-chiptune.wav');$('status').textContent='WAV ready to download.';}catch(e){$('status').textContent=e.message;}finally{$('saveWav').disabled=!project.notes.length;}});
 for(let midi=83;midi>=48;midi--){const label=document.createElement('button');label.type='button';label.textContent=name(midi);label.setAttribute('aria-label','Preview '+name(midi));label.addEventListener('click',()=>{hear({midi,voice:$('voice').value},'row-key');setTimeout(()=>preview.release('row-key'),180);});$('keys').append(label);}
-function frame(){const line=$('playhead');line.hidden=!player.playing;if(player.playing)line.style.left=player.step*32+'px';const step=player.step;keyboard.highlight([...preview.activeNotes,...(player.playing?project.notes.filter(n=>step>=n.step&&step<n.step+n.duration).map(n=>n.midi):[])]);requestAnimationFrame(frame);}draw();frame();$('scroll').scrollTop=420;$('pianoScroll').scrollLeft=7*44;for(const button of document.querySelectorAll('[data-octave]'))button.addEventListener('click',()=>{$('pianoScroll').scrollTo({left:Number(button.dataset.octave)*7*44,behavior:'smooth'});});
+function frame(){const line=$('playhead');line.hidden=!player.playing;if(player.playing)line.style.left=player.step*32+'px';requestAnimationFrame(frame);}draw();frame();$('scroll').scrollTop=420;
 window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
