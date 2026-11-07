@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Play a gentle touch synthesizer. Drag across the XY pad to change pitch, brightness, and volume.">
   <title>Still • Sound Pad</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=7">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=8">
 </head>
 <body data-app="sound-pad">
   <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a><a href="../chiptunes/">Chiptunes</a><a href="../strings/">Guitar &amp; Ukulele</a><a href="../handpan/">Handpan</a><a href="../sequencer/">Chiptune Studio</a><a href="../sudoku/">Sudoku</a><a href="../2048/">2048</a><a href="../chess/">Chess</a><a href="../drums/">Drum Studio</a><a href="../piano/">Piano</a></nav>
@@ -13,7 +13,7 @@
     <header><span class="eyebrow">STILL / PLAY BY FEEL</span><h1>A sound at your fingertips.</h1><p>A theremin-inspired XY pad. Touch, hold, and glide to find a sound of your own.</p></header>
     <section class="instrument" aria-label="Touch synthesizer">
       <div class="readouts"><div><span>Note</span><strong id="note">C5</strong></div><div><span>Pitch</span><strong id="pitch">523 Hz</strong></div><div><span>Tone</span><strong id="tone">Balanced</strong></div><span class="badge" id="playing">Ready</span></div>
-      <form id="frequencyForm" class="exact-controls" novalidate><label for="exactFrequency">Exact frequency (Hz)<input id="exactFrequency" type="number" min="55" max="1760" step="any" inputmode="decimal" aria-describedby="frequencyHelp" required></label><button type="submit">Play &amp; hold</button><button id="frequency432" type="button">432 Hz</button><p id="frequencyHelp">Enter 55–1760 Hz for precise tuning. The pitch range adjusts automatically.</p></form><div class="hold-controls"><label class="hold-toggle"><input id="hold" type="checkbox" aria-describedby="holdHelp">Hold sound after release</label><p id="holdHelp"></p></div><div class="pad-wrap">
+      <form id="frequencyForm" class="exact-controls" novalidate><label for="exactFrequency">Exact frequency (Hz)<input id="exactFrequency" type="number" min="55" max="1760" step="any" inputmode="decimal" aria-describedby="frequencyHelp" required></label><button type="submit">Play &amp; hold</button><p id="frequencyHelp">Enter 55–1760 Hz for precise tuning. The pitch range adjusts automatically.</p></form><section class="recent-frequencies" aria-label="Recently played frequencies"><div class="recent-heading"><h2>Recently played</h2><span id="recentCount"></span><button id="clearRecent" type="button">Clear list</button><button id="restoreRecent" type="button" hidden>Undo clear</button></div><div id="recentList" class="recent-list"></div><p id="recentNotice">Your last 20 synth frequencies save when you release the pad or stop. Tap one to replay and hold it.</p></section><div class="hold-controls"><label class="hold-toggle"><input id="hold" type="checkbox" aria-describedby="holdHelp">Hold sound after release</label><p id="holdHelp"></p></div><div class="pad-wrap">
         <span class="vertical-label">Brighter &amp; louder ↑</span>
         <div id="pad" class="pad" tabindex="0" role="group" aria-label="Sound pad" aria-describedby="instructions keyboardHelp">
           <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><canvas id="trailCanvas" class="trail-canvas" aria-hidden="true"></canvas><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div><div id="malletVisual" class="mallet-visual" aria-hidden="true"><span class="mallet-handle"></span><span class="mallet-head"></span></div>
@@ -38,6 +38,6 @@
     </section>
     <footer>Move slowly. Listen closely.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=7"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=8"></script>
 </body>
 </html>

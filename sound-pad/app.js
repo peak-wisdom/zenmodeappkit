@@ -2,6 +2,7 @@
 import {PadAudio, RANGES, ROOTS, SCALES, MALLETS, notesFor, clamp, soundAt} from './audio.js?v=3';
 
 import {locateFrequency,formatFrequency} from './tuning.js?v=1';
+import {cleanRecent,addRecent,RECENT_LIMIT} from './recent.js?v=1';
 import {PadTrail} from './trail.js?v=1';
 
 const $ = id => document.getElementById(id);
@@ -24,6 +25,9 @@ let keyboardKey = null;
 let playing = false;
 let playback = 0;
 let storageAvailable = true;
+let audible=false,recent=[],clearedRecent=[],recordedFrequency=null;
+const recentKey='still-sound-pad-history-v1';
+try{const saved=JSON.parse(localStorage.getItem(recentKey));recent=cleanRecent(Array.isArray(saved)?saved:saved?.frequencies);clearedRecent=cleanRecent(saved?.cleared);}catch{}
 
 try {
   const saved = JSON.parse(localStorage.getItem(key));
@@ -114,13 +118,14 @@ function renderInstrument() {
 
 async function play() {
   if (playing) {render();return;}
+  recordedFrequency=null;
   const request = ++playback;
   playing = true;
   render();
   $('status').textContent = settings.wave === 'steel-drum' ? 'Tap and glide across the notes. Let each strike ring.' : (settings.hold?'Glide through any frequency. Lift to keep the last sound playing.':'Glide through any frequency. Release to stop.');
   try {
     const started = await audio.start(settings, position);
-    if (started) audio.update(settings, position);
+    if (started) {audible=true;audio.update(settings, position);}
   } catch (error) {
     if (request !== playback) return;
     stop(true);
@@ -129,6 +134,7 @@ async function play() {
 }
 
 function stop(hard = false) {
+  rememberFrequency();audible=false;
   playback++;
   pointer = null;
   keyboardKey = null;
@@ -144,7 +150,7 @@ function stop(hard = false) {
 function releaseInput() {
   pointer=null;keyboardKey=null;trail.end();save();
   if(settings.hold&&playing&&settings.wave!=='steel-drum'){
-    render();$('status').textContent='Holding '+formatFrequency(soundAt(position.x,position.y,settings).frequency)+' Hz. Touch to change it, or press Stop sound.';
+    rememberFrequency();render();$('status').textContent='Holding '+formatFrequency(soundAt(position.x,position.y,settings).frequency)+' Hz. Touch to change it, or press Stop sound.';
   }else stop();
 }
 
@@ -160,6 +166,7 @@ function move(event) {
 pad.addEventListener('pointerdown', event => {
   if (pointer !== null || keyboardKey !== null || event.button !== 0) return;
   event.preventDefault();
+  recordedFrequency=null;
   pointer = event.pointerId;
   pad.focus({preventScroll: true});
   pad.setPointerCapture(pointer);
@@ -183,6 +190,7 @@ pad.addEventListener('keydown', event => {
   if ([' ', 'Enter'].includes(event.key)) {
     event.preventDefault();
     if (pointer === null && keyboardKey === null) {
+      recordedFrequency=null;
       keyboardKey = event.key;
       trail.begin(position.x,position.y);
       play();
@@ -250,6 +258,7 @@ save();
 async function tuneFrequency(value) {
   try {
     const hz=Number(value),target=locateFrequency(hz,settings.range);
+    recordedFrequency=null;
     if(settings.wave==='steel-drum')stop(true);
     settings.wave=settings.synthWave;settings.scale='continuous';settings.range=target.range;settings.hold=true;
     position.x=target.x;$('range').value=target.range;$('scale').value='continuous';$('hold').checked=true;$('exactFrequency').value=formatFrequency(hz);
@@ -258,4 +267,16 @@ async function tuneFrequency(value) {
   } catch(error) {$('status').textContent=error.message;$('exactFrequency').focus();}
 }
 $('frequencyForm').addEventListener('submit',event=>{event.preventDefault();tuneFrequency($('exactFrequency').value);});
-$('frequency432').addEventListener('click',()=>tuneFrequency(432));
+
+
+function saveRecent(){try{localStorage.setItem(recentKey,JSON.stringify({frequencies:recent,cleared:clearedRecent}));}catch{$('recentNotice').textContent='History is available for this visit; browser storage is unavailable.';}}
+function rememberFrequency(){if(!audible||settings.wave==='steel-drum')return;const hz=soundAt(position.x,position.y,settings).frequency,id=formatFrequency(hz);if(recordedFrequency===id)return;recordedFrequency=id;recent=addRecent(recent,hz);saveRecent();renderRecent();}
+function renderRecent(){
+  $('recentList').replaceChildren();$('recentCount').textContent=recent.length+' / '+RECENT_LIMIT;
+  $('clearRecent').disabled=!recent.length;$('restoreRecent').hidden=!clearedRecent.length;
+  if(!recent.length){const text=document.createElement('p');text.className='recent-empty';text.textContent='Play a frequency to save it here.';$('recentList').append(text);}
+  for(const hz of recent){const button=document.createElement('button');button.type='button';button.textContent=formatFrequency(hz)+' Hz';button.setAttribute('aria-label','Replay '+formatFrequency(hz)+' Hz');button.addEventListener('click',()=>tuneFrequency(hz));$('recentList').append(button);}
+}
+$('clearRecent').addEventListener('click',()=>{if(!recent.length)return;clearedRecent=recent.slice();recent=[];saveRecent();renderRecent();});
+$('restoreRecent').addEventListener('click',()=>{recent=cleanRecent([...clearedRecent,...recent]);clearedRecent=[];saveRecent();renderRecent();});
+renderRecent();
