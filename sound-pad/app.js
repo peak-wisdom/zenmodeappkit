@@ -1,12 +1,21 @@
 // SPDX-License-Identifier: MIT
-import {PadAudio, RANGES, ROOTS, SCALES, notesFor, clamp, soundAt} from './audio.js?v=2';
+import {PadAudio, RANGES, ROOTS, SCALES, MALLETS, notesFor, clamp, soundAt} from './audio.js?v=3';
 
 const $ = id => document.getElementById(id);
 const pad = $('pad');
 const key = 'still-sound-pad-v1';
-const settings = {wave: 'steel-drum', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4};
+const settings = {wave: 'steel-drum', range: 'mid', volume: 30, root: 0, scale: 'majorPentatonic', sustain: 1.4, mallet: 'rubber'};
 const position = {x: 0.5, y: 0.5};
-const audio = new PadAudio();
+const audio = new PadAudio(() => {
+  const mallet = $('malletVisual');
+  if (!mallet.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (const animation of mallet.getAnimations()) animation.cancel();
+  mallet.animate([
+    {transform: 'translate(-50%, -10px) rotate(-45deg)'},
+    {transform: 'translate(-50%, -3px) rotate(-25deg)', offset: 0.3},
+    {transform: 'translate(-50%, -10px) rotate(-35deg)'}
+  ], {duration: 180, easing: 'ease-out'});
+});
 let pointer = null;
 let keyboardKey = null;
 let playing = false;
@@ -22,6 +31,7 @@ try {
   if (Object.hasOwn(SCALES, saved?.scale)) settings.scale = saved.scale;
   else if (saved?.wave && saved.wave !== 'steel-drum') settings.scale = 'continuous';
   if ([0.6, 1.4, 2.8].includes(saved?.sustain)) settings.sustain = saved.sustain;
+  if (Object.hasOwn(MALLETS, saved?.mallet)) settings.mallet = saved.mallet;
 } catch { storageAvailable = false; }
 if (settings.wave === 'steel-drum' && settings.scale === 'continuous') settings.scale = 'majorPentatonic';
 
@@ -58,6 +68,14 @@ function renderInstrument() {
     $('noteLanes').append(lane);
   });
   $('sustain').disabled = !drum;
+  $('mallet').disabled = !drum;
+  pad.dataset.instrument = drum ? 'drum' : 'synth';
+  pad.dataset.mallet = settings.mallet;
+  $('malletInfo').textContent = drum ? {
+    soft: 'Soft mallet · a rounded, mellow attack with fewer bright overtones.',
+    rubber: 'Rubber mallet · a balanced steel-drum strike with a natural ring.',
+    wood: 'Wood mallet · a sharper, brighter strike with a shorter ring.'
+  }[settings.mallet] : 'Mallets shape the steel-drum voice. Choose Steel drum to use them.';
   $('root').disabled = settings.scale === 'continuous' && !drum;
   $('scale').querySelector('[value="continuous"]').disabled = drum;
   $('instrumentInfo').textContent = drum
@@ -162,7 +180,7 @@ for (const [value, name] of ROOTS.entries()) {
 for (const [value, scale] of Object.entries(SCALES)) {
   const option = document.createElement('option'); option.value = value; option.textContent = scale.name; $('scale').append(option);
 }
-for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain']) {
+for (const id of ['wave', 'range', 'volume', 'root', 'scale', 'sustain', 'mallet']) {
   $(id).value = settings[id];
   $(id).addEventListener('input', () => {
     settings[id] = ['volume', 'root', 'sustain'].includes(id) ? Number($(id).value) : $(id).value;

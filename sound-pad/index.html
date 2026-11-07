@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Play a gentle touch synthesizer. Drag across the XY pad to change pitch, brightness, and volume.">
   <title>Still • Sound Pad</title>
-  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=2">
+  <script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=3">
 </head>
 <body data-app="sound-pad">
   <nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="./" aria-current="page">Sound Pad</a></nav>
@@ -16,7 +16,7 @@
       <div class="pad-wrap">
         <span class="vertical-label">Brighter &amp; louder ↑</span>
         <div id="pad" class="pad" tabindex="0" role="group" aria-label="Sound pad" aria-describedby="instructions keyboardHelp">
-          <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div>
+          <div class="grid" aria-hidden="true"></div><div id="noteLanes" aria-hidden="true"></div><div class="cross horizontal" aria-hidden="true"></div><div class="cross vertical" aria-hidden="true"></div><div class="touch-orb" aria-hidden="true"></div><div id="malletVisual" class="mallet-visual" aria-hidden="true"><span class="mallet-handle"></span><span class="mallet-head"></span></div>
           <span class="pad-message" id="padMessage">Touch &amp; explore</span><span class="pad-corner" aria-hidden="true">XY / SYNTH</span>
         </div>
       </div>
@@ -29,13 +29,15 @@
         <label for="root">Root note<select id="root"></select></label>
         <label for="scale">Scale<select id="scale"></select></label>
         <label for="sustain">Drum sustain<select id="sustain"><option value="0.6">Short · 0.6 seconds</option><option value="1.4" selected>Natural · 1.4 seconds</option><option value="2.8">Long · 2.8 seconds</option></select></label>
+        <label for="mallet">Mallet<select id="mallet" aria-describedby="malletInfo"><option value="soft">Soft · mellow</option><option value="rubber" selected>Rubber · balanced</option><option value="wood">Wood · bright</option></select></label>
         <label class="volume" for="volume">Master volume <output id="volumeValue" for="volume">30%</output><input id="volume" type="range" min="0" max="100" step="1" value="30"></label>
       </div>
+      <p id="malletInfo" class="mallet-info"></p>
       <div class="bottom-row"><p id="keyboardHelp">Keyboard play · hold Space or Enter, then use the arrow keys to move. Release to stop.</p><button id="stop" type="button">Stop sound</button></div>
       <p id="status" role="status">Ready when you are. Your sound settings save in this browser.</p>
     </section>
     <footer>Move slowly. Listen closely.</footer>
   </main>
-  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=2"></script>
+  <script src="../timers.js?v=4"></script><script type="module" src="app.js?v=3"></script>
 </body>
 </html>

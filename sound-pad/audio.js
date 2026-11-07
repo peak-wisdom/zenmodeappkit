@@ -2,6 +2,11 @@
 export const RANGES = {low: [55, 440], mid: [110, 880], high: [220, 1760]};
 export const clamp = value => Math.min(1, Math.max(0, value));
 export const ROOTS = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+export const MALLETS = {
+  soft: {name: 'Soft', attack: 0.014, harmonics: 0.3, decay: 1.1, bend: 0.004, level: 1},
+  rubber: {name: 'Rubber', attack: 0.004, harmonics: 1, decay: 1, bend: 0.008, level: 1},
+  wood: {name: 'Wood', attack: 0.0015, harmonics: 1.6, decay: 0.8, bend: 0.012, level: 0.85}
+};
 export const SCALES = {
   continuous: {name: 'Free glide', steps: []},
   majorPentatonic: {name: 'Major pentatonic', steps: [0, 2, 4, 7, 9]},
@@ -53,7 +58,7 @@ export function soundAt(x, y, options = 'mid') {
 }
 
 export class PadAudio {
-  constructor() {
+  constructor(onStrike) {
     this.context = null;
     this.voice = null;
     this.request = 0;
@@ -62,6 +67,7 @@ export class PadAudio {
     this.hits = new Set();
     this.output = null;
     this.master = null;
+    this.onStrike = onStrike;
   }
 
   async start(settings, position) {
@@ -144,6 +150,7 @@ export class PadAudio {
     while (this.hits.size >= 12) this.fadeHit(this.hits.values().next().value);
     const now = this.context.currentTime;
     const sustain = settings.sustain || 1.4;
+    const mallet = MALLETS[settings.mallet] || MALLETS.rubber;
     const hit = {parts: [], ended: 0};
     this.hits.add(hit);
     const modes = [[1, 1, 1], [2.005, 0.45, 0.68], [3.97, 0.18, 0.4], [5.43, 0.07, 0.22]];
@@ -151,13 +158,13 @@ export class PadAudio {
       const oscillator = this.context.createOscillator();
       const gain = this.context.createGain();
       const frequency = Math.min(sound.frequency * ratio, this.context.sampleRate * 0.45);
-      const level = (0.07 + sound.brightness * 0.15) * weight * (index ? 0.3 + sound.brightness * 0.7 : 1);
+      const level = (0.07 + sound.brightness * 0.15) * weight * mallet.level * (index ? (0.3 + sound.brightness * 0.7) * mallet.harmonics : 1);
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(frequency * 1.008, now);
+      oscillator.frequency.setValueAtTime(frequency * (1 + mallet.bend), now);
       oscillator.frequency.exponentialRampToValueAtTime(frequency, now + 0.055);
       gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(level, now + 0.004);
-      gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.025 + sustain * decay);
+      gain.gain.linearRampToValueAtTime(level, now + mallet.attack);
+      gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.025 + sustain * decay * mallet.decay);
       oscillator.connect(gain);
       gain.connect(this.output);
       oscillator.onended = () => {
@@ -166,8 +173,9 @@ export class PadAudio {
       };
       hit.parts.push({oscillator, gain});
       oscillator.start(now);
-      oscillator.stop(now + 0.06 + sustain * decay);
+      oscillator.stop(now + 0.06 + sustain * decay * mallet.decay);
     });
+    this.onStrike?.();
   }
 
   fadeHit(hit) {
