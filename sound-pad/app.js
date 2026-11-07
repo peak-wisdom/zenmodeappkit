@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import {PadAudio, RANGES, ROOTS, SCALES, MALLETS, notesFor, clamp, soundAt} from './audio.js?v=3';
 
+import {locateFrequency,formatFrequency} from './tuning.js?v=1';
 import {PadTrail} from './trail.js?v=1';
 
 const $ = id => document.getElementById(id);
@@ -41,6 +42,7 @@ try {
   if(typeof saved?.trail==='boolean')settings.trail=saved.trail;
   if([1,3,6].includes(saved?.trailDuration))settings.trailDuration=saved.trailDuration;
   if(typeof saved?.hold==='boolean')settings.hold=saved.hold;
+  if(settings.wave!=='steel-drum'&&Number.isFinite(saved?.frequency)&&saved.frequency>=55&&saved.frequency<=1760){const target=locateFrequency(saved.frequency,settings.range);settings.range=target.range;position.x=target.x;}
 } catch {storageAvailable=false;}
 
 const trail = new PadTrail($('trailCanvas'), {enabled: settings.trail, duration: settings.trailDuration});
@@ -55,7 +57,8 @@ function render() {
   pad.style.setProperty('--x', `${position.x * 100}%`);
   pad.style.setProperty('--y', `${position.y * 100}%`);
   pad.dataset.playing = String(playing);
-  $('pitch').textContent = `${sound.frequency.toFixed(1)} Hz`;
+  $('pitch').textContent = `${formatFrequency(sound.frequency)} Hz`;
+  if(settings.wave!=='steel-drum'){settings.frequency=sound.frequency;if(document.activeElement!==$('exactFrequency'))$('exactFrequency').value=formatFrequency(sound.frequency);}
   $('note').textContent = sound.note;
   $('tone').textContent = sound.brightness > 0.66 ? 'Bright' : sound.brightness < 0.33 ? 'Mellow' : 'Balanced';
   $('playing').textContent = playing ? (settings.hold&&settings.wave!=='steel-drum'&&pointer===null&&keyboardKey===null?'Frequency held':'Playing') : 'Ready';
@@ -131,6 +134,7 @@ function stop(hard = false) {
   keyboardKey = null;
   playing = false;
   trail.end();
+  save();
   if (hard) audio.stop();
   else audio.release();
   render();
@@ -138,9 +142,9 @@ function stop(hard = false) {
 }
 
 function releaseInput() {
-  pointer=null;keyboardKey=null;trail.end();
+  pointer=null;keyboardKey=null;trail.end();save();
   if(settings.hold&&playing&&settings.wave!=='steel-drum'){
-    render();$('status').textContent='Holding '+soundAt(position.x,position.y,settings).frequency.toFixed(1)+' Hz. Touch to change it, or press Stop sound.';
+    render();$('status').textContent='Holding '+formatFrequency(soundAt(position.x,position.y,settings).frequency)+' Hz. Touch to change it, or press Stop sound.';
   }else stop();
 }
 
@@ -242,3 +246,16 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)trail.clear
 $('hold').checked=settings.hold;
 $('hold').addEventListener('change',()=>{settings.hold=$('hold').checked;if(!settings.hold&&playing&&pointer===null&&keyboardKey===null)stop(true);save();renderInstrument();});
 save();
+
+async function tuneFrequency(value) {
+  try {
+    const hz=Number(value),target=locateFrequency(hz,settings.range);
+    if(settings.wave==='steel-drum')stop(true);
+    settings.wave=settings.synthWave;settings.scale='continuous';settings.range=target.range;settings.hold=true;
+    position.x=target.x;$('range').value=target.range;$('scale').value='continuous';$('hold').checked=true;$('exactFrequency').value=formatFrequency(hz);
+    trail.begin(position.x,position.y);trail.end();audio.update(settings,position);renderInstrument();save();
+    await play();if(playing)releaseInput();
+  } catch(error) {$('status').textContent=error.message;$('exactFrequency').focus();}
+}
+$('frequencyForm').addEventListener('submit',event=>{event.preventDefault();tuneFrequency($('exactFrequency').value);});
+$('frequency432').addEventListener('click',()=>tuneFrequency(432));
