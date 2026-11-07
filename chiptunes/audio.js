@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import {frequencyFor} from '../sound-pad/audio.js?v=3';
+import {startTone} from './tones.js?v=1';
 
 function makeRack(context, volume) {
   const compressor = context.createDynamicsCompressor();
@@ -24,6 +25,11 @@ function pulse(rack, duty) {
 
 function scheduleNote(rack, event, at, stepDuration, style) {
   const context = rack.context;
+  if (event.voice === 'piano') {
+    const tone = startTone(context, rack.compressor, event.midi, 'piano', at, .17 * event.velocity, () => rack.nodes.delete(tone));
+    rack.nodes.add(tone); tone.release(at + event.duration * stepDuration);
+    return;
+  }
   const gain = context.createGain();
   let source, filter;
   let duration = event.duration * stepDuration;
