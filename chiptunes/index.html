@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Generate original seeded chiptunes with retro pulse melodies, triangle bass, and noise drums. Play, loop, and download WAV audio.">
+  <title>Still • Chiptune Lab</title><script src="../theme.js?v=1"></script><link rel="stylesheet" href="../theme.css?v=3"><link rel="stylesheet" href="style.css?v=1">
+</head><body data-app="chiptunes">
+<nav class="site-nav" aria-label="Main navigation"><a href="../">Home</a><a href="../breathing/">Breathing</a><a href="../day-count/">Day Countdown</a><a href="../focus-timer/">Focus Timer</a><a href="../grounding/">Grounding</a><a href="../memory/">Memory Game</a><a href="../sounds/">Sound Mixer</a><a href="../tic-tac-toe/">X &amp; O</a><a href="../wallpapers/">Wallpapers</a><a href="../birth-chart/">Birth Chart</a><a href="../transits/">Transits</a><a href="../mandala/">Mandala</a><a href="../sound-pad/">Sound Pad</a><a href="./" aria-current="page">Chiptunes</a></nav>
+<div class="theme-toolbar"><span id="theme-notice" role="status"></span><button id="theme-toggle" type="button" aria-label="Switch to light theme">Light theme</button></div>
+<main><header><span class="eyebrow">STILL / POCKET MELODIES</span><h1>A little retro rhythm.</h1><p>Make a tiny soundtrack. Find a seed, choose a mood, and let the pixels sing.</p></header>
+<section class="lab" aria-label="Chiptune generator">
+  <div class="song-heading"><div><h2 id="songTitle">A fresh little tune</h2><p id="songInfo"></p></div><span id="playState" class="badge">Ready</span></div>
+  <div class="sequence" role="img" aria-label="Generated melody, bass, arpeggio and drum sequence"><div id="roll"></div><div id="playhead" aria-hidden="true"></div></div>
+  <div class="legend"><span class="lead">● Melody</span><span class="bass">● Bass</span><span class="arp">● Arpeggio</span><span class="drums">● Drums</span><output id="position">Bar 1</output></div>
+  <div class="transport"><button id="newTune" class="primary" type="button">New tune ✧</button><button id="play" type="button">Play tune ▶</button><button id="download" type="button">Download WAV ↗</button></div>
+  <form id="composer"><div class="fields">
+    <label class="seed-field" for="seed">Tune seed<input id="seed" type="text" value="little-adventure" maxlength="64" required autocomplete="off" spellcheck="false"></label>
+    <label for="style">Style<select id="style"><option value="arcade">Arcade · pulse lead</option><option value="adventure">Adventure · narrow pulse</option><option value="dream">Dreamscape · soft triangle</option></select></label>
+    <label for="root">Root note<select id="root"></select></label>
+    <label for="scale">Scale<select id="scale"></select></label>
+    <label for="bars">Phrase length<select id="bars"><option value="4">4 bars</option><option value="8">8 bars</option></select></label>
+  </div><button type="submit">Create from seed</button><p class="note">The same seed, style, root, scale, and length recreate the same notes.</p></form>
+  <div class="mix"><label for="bpm">Tempo <output id="bpmValue">120 BPM</output><input id="bpm" type="range" min="60" max="180" step="1" value="120"></label><label for="volume">Master volume <output id="volumeValue">35%</output><input id="volume" type="range" min="0" max="100" step="1" value="35"></label></div>
+  <fieldset class="channels"><legend>Build your mix</legend><label><input id="lead" type="checkbox" checked>Melody</label><label><input id="bass" type="checkbox" checked>Bass</label><label><input id="arp" type="checkbox">Arpeggio</label><label><input id="drums" type="checkbox" checked>Drums</label><label class="loop"><input id="loop" type="checkbox" checked>Loop playback</label></fieldset>
+  <p id="status" role="status">Ready to generate. Your settings save in this browser.</p><p class="note">WAV download contains one phrase with your current tempo, channel selection, and volume. Playback stops when you leave this page.</p>
+</section><footer>Little notes. Lots of possibilities.</footer></main>
+<script src="../timers.js?v=4"></script><script type="module" src="app.js?v=1"></script>
+</body></html>
