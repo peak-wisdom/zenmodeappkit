@@ -4,7 +4,7 @@ This repository contains separately licensed components. The root [MIT license](
 
 | Component | License |
 | --- | --- |
-| Home page; breathing, day-count, focus-timer, grounding, memory, sounds, tic-tac-toe, wallpapers, mandala, sound-pad, chiptunes, strings, handpan, sequencer, sudoku, 2048, chess, piano, and drums apps (excluding third-party drum recordings) | MIT |
+| Home page; breathing, day-count, focus-timer, grounding, memory, sounds, tic-tac-toe, wallpapers, mandala, sound-pad, chiptunes, strings, handpan, sequencer, sudoku, 2048, chess, piano, flipbook, and drums apps (excluding third-party drum recordings) | MIT |
 | Shared `theme.js`, `theme.css`, `timers.js`, and `playground.css` | MIT |
 | Project-owned root documentation | MIT |
 | `birth-chart/` implementation, interface, and calculation checks | AGPL-3.0-only; see [birth-chart/LICENSE](birth-chart/LICENSE) |

@@ -45,3 +45,10 @@ The sound mixer synthesizes its sound using browser audio APIs; the wallpaper ge
 - License: Creative Commons Attribution 3.0 Unported (CC BY 3.0), https://creativecommons.org/licenses/by/3.0/ .
 - Bundled files, source URLs, and changes at playback/export: [drums/samples/NOTICE.md](drums/samples/NOTICE.md). These recordings retain their own license.
 - App credits identify the author, pack, source, and license. Downloaded projects and WAV INFO comments carry attribution and an indication of arrangement/mixing.
+
+## gifenc
+
+- Used by Flipbook Studio for GIF encoding and adaptive color palettes.
+- Version **1.0.3**, self-hosted at `flipbook/vendor/gifenc.js`.
+- Source: https://github.com/mattdesl/gifenc
+- License: MIT; upstream notices are preserved in [flipbook/vendor/LICENSE.md](flipbook/vendor/LICENSE.md).
