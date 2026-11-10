@@ -2,6 +2,7 @@
 import{MAX_FRAMES,SIZES,blankProject,emptyFrame,validProject,cleanProject}from './model.js';
 import{drawLayer,drawPaper}from './draw.js';
 import{openStorage}from './storage.js';
+import{enableFrameDrag}from './frame-drag.js';
 const $=id=>document.getElementById(id),paper=$('paper'),layer=document.createElement('canvas'),ghost=document.createElement('canvas');
 let project=blankProject(),selected=0,prefs={tool:'pen',color:'#183b31',size:8,onion:true,opacity:25};
 let undo=[],redo=[],draft=null,strokePointer=null,storage=null,loaded=false,revision=0,paintRequest=null;
@@ -38,6 +39,8 @@ function drawFrames(){
     const image=document.createElement('img');image.src=thumbnail(frame);image.alt='';const label=document.createElement('span');label.textContent=String(index+1).padStart(2,'0');button.append(image,label);
     button.addEventListener('click',()=>{beforeAction();selected=index;render();save();});return button;
   }));
+  $('movePosition').replaceChildren(...project.frames.map((_,index)=>{const option=document.createElement('option');option.value=index;option.textContent='Page '+(index+1);return option;}));
+  $('movePosition').value=selected;$('movePosition').disabled=$('moveTo').disabled=project.frames.length===1;
   $('frameCount').textContent=project.frames.length+' / '+MAX_FRAMES+' frames';
   if(focused)$('frames').querySelector(`[data-frame="${selected}"]`)?.focus({preventScroll:true});
 }
@@ -103,6 +106,13 @@ for(const id of['add','duplicate'])$(id).addEventListener('click',()=>{
 });
 $('delete').addEventListener('click',()=>{beforeAction();if(project.frames.length===1)return;const frames=project.frames.filter((_,i)=>i!==selected);if(commit({...project,frames},Math.min(selected,frames.length-1)))announce('Frame deleted. Undo brings it back.');});
 for(const [id,delta]of[['earlier',-1],['later',1]])$(id).addEventListener('click',()=>{beforeAction();const destination=selected+delta;if(destination<0||destination>=project.frames.length)return;const frames=project.frames.slice();[frames[selected],frames[destination]]=[frames[destination],frames[selected]];commit({...project,frames},destination);});
+function moveFrame(from,destination){
+  if(!Number.isInteger(destination)||destination<0||destination>=project.frames.length||destination===from){announce('Page position unchanged.');return;}
+  const frames=project.frames.slice(),[frame]=frames.splice(from,1);frames.splice(destination,0,frame);
+  if(commit({...project,frames},destination)){announce('Frame moved from page '+(from+1)+' to page '+(destination+1)+'. Undo restores its previous position.');$('frames').querySelector('[data-frame="'+selected+'"]')?.scrollIntoView({block:'nearest',inline:'nearest'});}
+}
+$('moveTo').addEventListener('click',()=>{const destination=Number($('movePosition').value);beforeAction();moveFrame(selected,destination);});
+enableFrameDrag($('frames'),{canStart:()=>loaded&&!exporting&&project.frames.length>1,onStart:beforeAction,onMove:moveFrame,announce});
 $('clearFrame').addEventListener('click',()=>{beforeAction();const frames=project.frames.slice();frames[selected]={...frames[selected],strokes:[]};commit({...project,frames});announce('Current frame cleared. Undo restores the drawing.');});
 $('new').addEventListener('click',()=>{beforeAction();commit(blankProject(),0);announce('New flipbook ready. Undo returns to your previous project.');});
 for(const id of['undo','redo'])$(id).addEventListener('click',()=>{
