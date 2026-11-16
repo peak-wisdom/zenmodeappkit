@@ -24,6 +24,8 @@ Preferences, optional location, and the explored instant are saved in the browse
 
 PNG export rasterizes the standalone map SVG at 2000 × 1520; if PNG encoding is unavailable, the original SVG is offered instead. The map includes the displayed UTC instant and scale explanation. CSV exports the exact displayed instant, coordinate frames/units, all ten bodies, observer coordinates when present, and refraction setting. Downloads remain on the user's device unless they choose to share them.
 
+The Full screen button requests browser fullscreen for the map and its controls. When that is unavailable or declined, an expanded in-page overlay fills the visible browser area instead. Exit full screen (or Escape) returns to the page and restores keyboard focus. Live updates, body selection, zoom, and playback remain available. Fullscreen is entered only by a user action and is not restored automatically after refresh.
+
 ## Independent validation
 
 `validation-fixtures.js` contains 16 small numerical observer-table fixtures retrieved from the [NASA/JPL Horizons API](https://ssd-api.jpl.nasa.gov/doc/horizons.html) on 2026-11-15. The tables are used only during development/checks; the application never requests Horizons at runtime. No NASA imagery, logos, or endorsement is used.

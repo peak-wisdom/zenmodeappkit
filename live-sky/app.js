@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import {BODIES,DAY,MIN,MAX,clamp,norm,parseUTC,cleanObserver,restore,calculate,nextEvents,motionTrail,skyLight,csv} from './core.js';
 import {renderScene,phaseSVG,escape} from './view.js';
+import {setupFullscreen} from './fullscreen.js';
 
 const $=id=>document.getElementById(id),KEY='still-live-sky-v1';
 let state=restore(null),rows=[],playing=false,lastTick=performance.now(),timer=null,storageFailed=false;
@@ -30,7 +31,8 @@ function sync(){
   $('spaceView').setAttribute('aria-pressed',String(state.view==='space'));$('skyView').setAttribute('aria-pressed',String(state.view==='sky'));
   $('spaceControls').hidden=state.view!=='space';$('trail').disabled=state.view!=='space';$('viewport').dataset.view=state.view;
   $('live').setAttribute('aria-pressed',String(state.mode==='live'));$('play').textContent=playing?'Pause time-lapse ❚❚':'Play time-lapse ▶';
-  const mode=state.mode==='live'?'LIVE NOW':playing?'TIME-LAPSE':'EXPLORING · PAUSED';$('modeBadge').textContent=mode;$('modeBadge').dataset.mode=state.mode;
+  $('fullBody').value=state.selected;$('fullZoom').hidden=state.view!=='space';$('fullPlay').textContent=playing?'Pause time-lapse ❚❚':'Play time-lapse ▶';
+  const mode=state.mode==='live'?'LIVE NOW':playing?'TIME-LAPSE':'EXPLORING · PAUSED';$('modeBadge').textContent=mode;$('modeBadge').dataset.mode=state.mode;$('mapMode').textContent=mode;
 }
 function syncLocation(){
   const observer=state.observer;
@@ -67,7 +69,7 @@ function drawDetails(){
 }
 function draw(){
   rows=calculate(state.stamp,state.observer,state.refraction);
-  $('clock').textContent=utc(state.stamp);$('clock').dateTime=new Date(state.stamp).toISOString();
+  $('clock').textContent=utc(state.stamp);$('clock').dateTime=new Date(state.stamp).toISOString();$('mapClock').textContent=utc(state.stamp);$('mapClock').dateTime=new Date(state.stamp).toISOString();
   $('localClock').textContent='Your device time zone · '+new Date(state.stamp).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'medium'});
   if(!editingTime)$('instant').value=new Date(state.stamp).toISOString().slice(0,19);
   $('back').disabled=state.stamp<=MIN;$('forward').disabled=state.stamp>=MAX;
@@ -92,6 +94,11 @@ function updateTime(){
     else if(playing){const stamp=state.stamp+elapsed*state.speed;state.stamp=clamp(stamp,MIN,MAX);if(stamp<MIN||stamp>MAX){pause();announce('Reached the supported date boundary.');}draw();save();}
   }catch(error){pause();announce('The sky could not be updated: '+error.message);}
 }
+$('fullBody').innerHTML=BODIES.map(p=>'<option value="'+p.name+'">'+p.name+'</option>').join('');
+$('fullBody').addEventListener('change',()=>selectBody($('fullBody').value));
+for(const [id,target] of [['fullLive','live'],['fullPlay','play'],['fullReset','resetView']])$(id).addEventListener('click',()=>$(target).click());
+for(const [id,delta] of [['fullZoomOut',-.15],['fullZoomIn',.15]])$(id).addEventListener('click',()=>{state.zoom=clamp(state.zoom+delta,.6,2.5);sync();drawMap();save();});
+setupFullscreen({stage:$('mapStage'),button:$('fullscreen'),announce});
 $('bodyPicks').innerHTML=BODIES.map(p=>'<button type="button" data-body="'+p.name+'" aria-pressed="false" style="--planet-color:'+p.color+'"><span class="planet-dot" aria-hidden="true"></span><strong>'+p.name+'</strong><span class="pick-distance">Calculating…</span></button>').join('');
 for(const id of ['bodyPicks','positions'])$(id).addEventListener('click',event=>{const node=event.target.closest('[data-body]');if(node)selectBody(node.dataset.body);});
 $('instant').addEventListener('input',()=>{editingTime=true;});
