@@ -52,3 +52,13 @@ The sound mixer synthesizes its sound using browser audio APIs; the wallpaper ge
 - Version **1.0.3**, self-hosted at `flipbook/vendor/gifenc.js`.
 - Source: https://github.com/mattdesl/gifenc
 - License: MIT; upstream notices are preserved in [flipbook/vendor/LICENSE.md](flipbook/vendor/LICENSE.md).
+
+## Astronomy Engine
+
+- Used exclusively by the independent `live-sky/` app.
+- Astronomy Engine **2.1.19**, by Don Cross, MIT license.
+- Source: https://github.com/cosinekitty/astronomy
+- The unmodified `esm/astronomy.js` from the pinned npm distribution is self-hosted at `live-sky/vendor/astronomy.js`; the embedded copyright/license notice is retained and reproduced in `live-sky/vendor/LICENSE`.
+- Download source: https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/esm/astronomy.js
+- This app does not import Swiss Ephemeris or the AGPL birth-chart/transits modules.
+- Numerical test fixtures are observer-table values from NASA/JPL Horizons, retrieved 2026-11-15 for Earth geocenter and the specified local observer. See `live-sky/NOTICE.md`. No NASA imagery, logos, or endorsement is used.
