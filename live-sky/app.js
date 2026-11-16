@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import {BODIES,DAY,MIN,MAX,clamp,norm,parseUTC,cleanObserver,restore,calculate,nextEvents,motionTrail,skyLight,csv} from './core.js';
 import {renderScene,phaseSVG,escape} from './view.js';
-import {setupFullscreen} from './fullscreen.js';
+import {setupFullscreen} from './fullscreen.js?v=2';
 
 const $=id=>document.getElementById(id),KEY='still-live-sky-v1';
 let state=restore(null),rows=[],playing=false,lastTick=performance.now(),timer=null,storageFailed=false;

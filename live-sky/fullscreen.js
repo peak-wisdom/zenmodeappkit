@@ -25,7 +25,7 @@ export function setupFullscreen({stage,button,onChange=()=>{},announce=()=>{}}){
   }
   function hideOverlay(){overlay=false;unlockScroll();sync();announce('Returned to the page.');}
   async function toggle(){
-    if(busy)return;busy=true;button.disabled=true;
+    if(busy)return;busy=true;button.setAttribute('aria-busy','true');
     try{
       if(overlay){hideOverlay();return;}
       if(native()){
@@ -39,7 +39,7 @@ export function setupFullscreen({stage,button,onChange=()=>{},announce=()=>{}}){
         catch{ /* Expanded in-page view also works when native fullscreen is denied. */ }
       }
       showOverlay();
-    }finally{busy=false;button.disabled=false;}
+    }finally{busy=false;button.removeAttribute('aria-busy');}
   }
   button.addEventListener('click',toggle);
   doc.addEventListener('fullscreenchange',()=>{
