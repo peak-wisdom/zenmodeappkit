@@ -62,3 +62,9 @@ The sound mixer synthesizes its sound using browser audio APIs; the wallpaper ge
 - Download source: https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/esm/astronomy.js
 - This app does not import Swiss Ephemeris or the AGPL birth-chart/transits modules.
 - Numerical test fixtures are observer-table values from NASA/JPL Horizons, retrieved 2026-11-15 for Earth geocenter and the specified local observer. See `live-sky/NOTICE.md`. No NASA imagery, logos, or endorsement is used.
+
+## Map Art Studio
+
+- `map-art/` uses self-hosted Leaflet 1.9.4 (BSD-2-Clause), @mapbox/vector-tile 2.0.4 (BSD-3-Clause), bundled @mapbox/point-geometry 1.1.0 (ISC), and pbf 4.0.1 (BSD-3-Clause). License texts are in `map-art/vendor/`.
+- Printed vector data is provided by OpenFreeMap in the OpenMapTiles schema, using OpenStreetMap data under ODbL. Source attribution remains on every export. The root MIT license does not cover geographic data.
+- The location picker uses OpenStreetMap raster tiles; explicit place search uses Photon. See [map-art/NOTICE.md](map-art/NOTICE.md) for sources, service usage, persistence, and print limitations.

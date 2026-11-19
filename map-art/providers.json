@@ -1,0 +1,5 @@
+{
+  "search": "https://photon.komoot.io/api/",
+  "tilejson": "https://tiles.openfreemap.org/planet/latest",
+  "pickerTiles": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+}
