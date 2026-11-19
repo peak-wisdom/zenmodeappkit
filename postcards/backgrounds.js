@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: MIT
+import {FORMATS,OCCASIONS,palette,random,hash} from './core.js';
+const mix=(a,b,t)=>'#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t).toString(16).padStart(2,'0')).join('');
+const circle=(x,y,r,fill,extra='')=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" ${extra}/>`;
+function star(x,y,r,color){const points=Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5,d=i%2?r*.44:r;return(x+Math.cos(a)*d).toFixed(2)+','+(y+Math.sin(a)*d).toFixed(2);}).join(' ');return `<polygon points="${points}" fill="${color}"/>`;}
+function heart(color){return `<path d="M0 34C-76-13-37-67 0-29C37-67 76-13 0 34Z" fill="${color}"/>`;}
+function sprig(c){let svg=`<path d="M0 65Q-9 3 12-63" fill="none" stroke="${c.ink}" stroke-width="2"/>`;for(let i=0;i<6;i++){const y=48-i*20,side=i%2?1:-1;svg+=`<path d="M${i*.9} ${y}Q${side*39} ${y-30} ${side*34} ${y-7}Q${side*15} ${y+7} ${i*.9} ${y}" fill="${i%2?c.accent:c.second}" opacity=".8"/>`;}return svg;}
+function blossom(c,petals=7){let svg='';for(let i=0;i<petals;i++)svg+=`<ellipse cx="0" cy="-20" rx="12" ry="24" transform="rotate(${i*360/petals})" fill="${i%2?c.accent:c.second}" opacity=".82"/>`;return svg+circle(0,0,10,c.paper)+circle(0,0,5,c.ink);}
+function cake(c){return `<ellipse cx="0" cy="43" rx="69" ry="9" fill="${c.second}" opacity=".4"/><rect x="-54" y="-13" width="108" height="54" rx="9" fill="${c.accent}"/><path d="M-54-11Q-45-25-35-17Q-22-25-10-17Q3-26 16-17Q33-25 43-16Q55-21 54-9V7Q44 23 36 7V0Q24 12 16 0Q3 15-7 1Q-20 13-29 1V12Q-42 25-47 7L-54 5Z" fill="${mix(c.paper,'#ffffff',.65)}"/>${[-27,0,27].map((x,i)=>`<rect x="${x-3}" y="-48" width="6" height="29" rx="2" fill="${i===1?c.second:c.ink}"/><path d="M${x}-53C${x-13}-58 ${x-1}-74 ${x}-75C${x+12}-61 ${x+8}-54 ${x}-53Z" fill="${c.second}"/>`).join('')}<path d="M-48 28H48" stroke="${c.paper}" stroke-width="2" opacity=".6"/>`;}
+function balloons(c){return [-1,0,1].map((i,index)=>{const x=i*38,y=index===1?-25:0;return `<path d="M${x} ${y+35}Q${x+30} ${y+75} ${i*12} 122" stroke="${c.ink}" stroke-width="1.3" fill="none" opacity=".6"/><ellipse cx="${x}" cy="${y}" rx="28" ry="37" fill="${index===1?c.second:c.accent}"/><path d="M${x-17} ${y-11}Q${x-15} ${y-26} ${x-5} ${y-27}" fill="none" stroke="${c.paper}" stroke-width="4" stroke-linecap="round" opacity=".7"/><path d="M${x} ${y+35}l-5 8h10Z" fill="${index===1?c.second:c.accent}"/>`;}).join('');}
+function cap(c){return `<path d="M-48 3V33Q0 64 48 33V3" fill="${c.accent}"/><path d="M-77-8 0-46 77-8 0 30Z" fill="${c.ink}"/><path d="M0-8 50 2V62" fill="none" stroke="${c.second}" stroke-width="4"/>${circle(0,-8,5,c.second)}<path d="M50 58l-10 25h20Z" fill="${c.second}"/>`;}
+function diploma(c){return `<g transform="rotate(-17)"><rect x="-65" y="-22" width="130" height="44" rx="15" fill="${mix(c.paper,'#ffffff',.7)}" stroke="${c.second}" stroke-width="2"/><path d="M-51-22Q-34 0-51 22M51-22Q34 0 51 22" fill="none" stroke="${c.second}"/><path d="M-7-23H8V25H-7Z" fill="${c.accent}"/><path d="M-2 21-20 52 0 43 12 54 7 20" fill="${c.accent}"/></g>`;}
+function cloud(c){return `<path d="M-61 25C-93 21-84-18-55-18C-58-61 5-66 17-29C52-48 86-6 62 19C65 44-51 48-61 25Z" fill="${mix(c.paper,'#ffffff',.72)}" stroke="${mix(c.accent,c.paper,.4)}" stroke-width="2"/>${circle(-21,10,2,c.ink)}${circle(18,10,2,c.ink)}<path d="M-9 17Q-1 25 7 17" fill="none" stroke="${c.ink}" stroke-width="2"/>`;}
+function moon(c){return `<path d="M29-61A64 64 0 1 0 62 33A55 55 0 0 1 29-61Z" fill="${c.second}"/>${star(46,-31,11,c.accent)}${star(79,1,8,c.accent)}`;}
+function blocks(c){return `<g transform="rotate(-8)"><rect x="-58" y="-18" width="49" height="49" rx="7" fill="${c.accent}"/><rect x="-3" y="-18" width="49" height="49" rx="7" fill="${c.second}"/><rect x="-28" y="-72" width="49" height="49" rx="7" fill="${mix(c.accent,c.second,.5)}"/><g font-family="Georgia,serif" font-size="30" text-anchor="middle" fill="${c.paper}"><text x="-34" y="17">A</text><text x="22" y="17">B</text><text x="-3" y="-37">C</text></g></g>`;}
+function rings(c){return `<g fill="none" stroke="${c.second}" stroke-width="7"><circle cx="-21" cy="7" r="33"/><circle cx="21" cy="7" r="33"/></g><path d="M4-30 13-44 32-44 41-30 23-17Z" fill="${mix(c.paper,'#ffffff',.8)}" stroke="${c.second}" stroke-width="2"/>`;}
+function envelope(c){return `<rect x="-65" y="-39" width="130" height="81" rx="9" fill="${mix(c.accent,c.paper,.4)}"/><path d="M-62-35 0 12 62-35M-62 38-18 3M62 38 18 3" fill="none" stroke="${c.ink}" stroke-opacity=".35" stroke-width="2"/><g transform="translate(0 1) scale(.34)">${heart(c.second)}</g>`;}
+function fireworks(c,rng){let svg='';for(let i=0;i<18;i++){const a=i*20*Math.PI/180,r=45+rng()*25,x=Math.cos(a),y=Math.sin(a);svg+=`<path d="M${x*22} ${y*22}L${x*r} ${y*r}" stroke="${i%2?c.second:c.accent}" stroke-width="${i%3?2:4}" stroke-linecap="round"/>`+circle(x*(r+9),y*(r+9),2.5,c.second);}return svg+star(0,0,14,c.second);}
+function pine(c){let svg=`<path d="M-55 60Q-1 0 45-60" fill="none" stroke="${c.ink}" stroke-width="2"/>`;for(let i=0;i<9;i++){const x=-48+i*10,y=51-i*12;svg+=`<path d="M${x} ${y}l-31-11m31 11 0 30m10-42-29-14m29 14 3 27" fill="none" stroke="${c.accent}" stroke-width="3" stroke-linecap="round"/>`;}return svg;}
+function ornament(c){return `<path d="M0-85V-48" stroke="${c.second}" stroke-width="2"/><rect x="-9" y="-51" width="18" height="11" rx="3" fill="${c.second}"/>${circle(0,0,42,c.accent)}<path d="M-37-18Q0 0 37-18M-40 0Q0 20 40 0M-34 21Q0 38 34 21" fill="none" stroke="${c.paper}" stroke-width="3" opacity=".75"/>${star(0,-14,12,c.second)}`;}
+function diya(c){return `<ellipse cy="32" rx="68" ry="13" fill="${c.second}" opacity=".23"/><path d="M-66-1Q0 78 66-1Z" fill="${c.accent}"/><ellipse cy="0" rx="66" ry="12" fill="${c.second}"/><path d="M0-3C-40-21-15-61 5-82C30-47 35-14 0-3Z" fill="${c.second}"/><path d="M0-10C-13-23-5-44 4-52C15-30 13-16 0-10Z" fill="${c.paper}"/><path d="M-44 18Q0 54 44 18" fill="none" stroke="${c.paper}" stroke-width="3"/>`;}
+function lantern(c){return `<path d="M0-95V-66M-14-56Q0-82 14-56" fill="none" stroke="${c.second}" stroke-width="2"/><path d="M-25-54H25L38-35V37L22 57H-22L-38 37V-35Z" fill="${mix(c.accent,c.paper,.3)}" stroke="${c.second}" stroke-width="3"/><path d="M-15-51V54M15-51V54M-34-32H34M-34 35H34" stroke="${c.second}" stroke-width="2"/>${star(0,2,16,c.paper)}<path d="M0 58V80m-6-11 6 11 6-11" fill="none" stroke="${c.second}" stroke-width="2"/>`;}
+function mountains(c){return `${circle(38,-34,28,c.second)}<path d="M-103 65-34-51 33 65Z" fill="${c.accent}"/><path d="M-9 65 52-35 114 65Z" fill="${mix(c.accent,c.ink,.22)}"/><path d="M-34-51-55-15-34-26-17-17ZM52-35 33-4 52-12 69-5Z" fill="${c.paper}"/><path d="M-110 66H122" stroke="${c.ink}" stroke-opacity=".4" stroke-width="2"/>`;}
+function sun(c){let svg=circle(0,0,39,c.second);for(let i=0;i<12;i++){const a=i*Math.PI/6;svg+=`<path d="M${Math.cos(a)*51} ${Math.sin(a)*51}l${Math.cos(a)*13} ${Math.sin(a)*13}" stroke="${c.second}" stroke-width="3" stroke-linecap="round"/>`;}return svg;}
+export function backgroundArtwork(state){
+  const {w,h}=FORMATS[state.size],c=palette(state),rng=random(state.seed+'-'+state.occasion),family=OCCASIONS[state.occasion].family,id='bg'+hash(state.seed+state.occasion+state.style),s=Math.min(w,h)/600;
+  const shadow=state.style==='cut'?` filter="url(#${id}-shadow)"`:'';
+  let svg=`<defs><radialGradient id="${id}-wash"><stop stop-color="${c.accent}" stop-opacity=".22"/><stop offset="1" stop-color="${c.accent}" stop-opacity="0"/></radialGradient><filter id="${id}-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="5" stdDeviation="3" flood-color="${c.ink}" flood-opacity=".12"/></filter></defs><rect width="${w}" height="${h}" fill="${c.paper}"/>`;
+  svg+=`<ellipse cx="${w*.16}" cy="${h*.2}" rx="${w*.55}" ry="${h*.65}" fill="url(#${id}-wash)"/><ellipse cx="${w*.94}" cy="${h*.94}" rx="${w*.4}" ry="${h*.5}" fill="url(#${id}-wash)"/>`;
+  const composition=Math.floor(rng()*4),scaleVariation=.82+rng()*.35;
+  const group=(art,x,y,scale=1,angle=0)=>{if(composition%2)x=w-x;if(composition>1)y=h-y;return `<g transform="translate(${x} ${y}) rotate(${composition%2?-angle:angle}) scale(${s*scale*scaleVariation})"${shadow}>${art}</g>`;};
+  const j=()=>rng()*14-7,xLeft=w*(.08+rng()*.035),xRight=w*(.89+rng()*.035);
+  const flowerPair=()=>group(sprig(c),xLeft,h*.22,1.25,-28+j())+group(blossom(c),w*.09,h*.1,.75,j())+group(sprig(c),xRight,h*.83,1.4,150+j())+group(blossom(c),w*.92,h*.91,.8,j());
+  const scenes={
+    birthday:()=>group(balloons(c),xRight,h*.18,.9,j())+group(cake(c),xLeft+25*s,h*.82,1.13,j())+group(blossom(c),w*.06,h*.12,.45,20),
+    graduation:()=>group(cap(c),xRight-10*s,h*.18,1.03,j())+group(diploma(c),xLeft+30*s,h*.86,1.15,j())+group(sprig({...c,accent:c.second}),xLeft,h*.2,.8,-25),
+    nursery:()=>group(moon(c),xRight-10*s,h*.15,.95,-12+j())+group(cloud(c),xLeft+10*s,h*.13,.9,j())+group(blocks(c),xLeft+25*s,h*.85,.9,j())+group(cloud(c),xRight,h*.87,.9,j()),
+    wedding:()=>flowerPair()+group(rings(c),xRight-10*s,h*.19,.87,-12+j()),
+    love:()=>flowerPair()+group(heart(c.accent),xRight,h*.21,.62,12+j())+group(heart(c.second),xLeft+20*s,h*.8,.42,-12),
+    botanical:()=>flowerPair()+group(blossom({...c,accent:c.second}),xRight-30*s,h*.12,.5,20),
+    garden:()=>flowerPair()+group(sun(c),xRight-15*s,h*.17,.75,j()),
+    mountains:()=>group(mountains(c),xRight-28*s,h*.84,1.17,j())+group(sun(c),xLeft+6*s,h*.14,.65,j())+group(sprig(c),xLeft,h*.84,1,-15),
+    friendship:()=>flowerPair()+group(envelope(c),xRight-10*s,h*.2,.83,12+j()),
+    fireworks:()=>group(fireworks(c,rng),xRight,h*.17,.95,j())+group(fireworks(c,rng),xLeft,h*.82,.85,j())+group(fireworks(c,rng),xLeft+10*s,h*.1,.45,j()),
+    winter:()=>group(pine(c),xLeft,h*.15,1.5,-70)+group(ornament(c),xRight-10*s,h*.19,.95,j())+group(pine(c),xRight,h*.88,1.4,100)+group(ornament({...c,accent:c.second}),xLeft+22*s,h*.83,.75,j()),
+    diwali:()=>group(diya(c),xLeft+15*s,h*.84,1.1,j())+group(diya(c),xRight-5*s,h*.22,.8,j())+group(blossom(c,10),xLeft,h*.15,.8,0)+group(blossom(c,10),xRight,h*.88,.7,0),
+    eid:()=>group(lantern(c),xRight-15*s,h*.2,1,j())+group(moon(c),xLeft+18*s,h*.18,.77,-12)+group(lantern({...c,accent:c.second}),xLeft+15*s,h*.87,.78,j()),
+    invitation:()=>flowerPair()+group(envelope(c),xRight-10*s,h*.2,.8,12+j()),
+    travel:()=>group(mountains(c),xLeft+30*s,h*.84,1.15,j())+group(sun(c),xRight,h*.17,.8,j())+group(envelope(c),xRight-10*s,h*.84,.6,-15)
+  };
+  svg+=(scenes[family]??scenes.botanical)();
+  for(let i=0;i<25;i++){const x=rng()*w,y=rng()*h;if(x>w*.2&&x<w*.8&&y>h*.15&&y<h*.85)continue;svg+=['nursery','fireworks','graduation','eid','winter'].includes(family)?star(x,y,(3+rng()*6)*s,i%2?c.accent:c.second):circle(x,y,(1.5+rng()*3)*s,i%2?c.accent:c.second,'opacity=".45"');}
+  if(state.texture)for(let i=0;i<150;i++)svg+=circle(rng()*w,rng()*h,.5+rng(),c.ink,'opacity=".035"');
+  if(state.style==='line')svg+=`<rect x="${18*s}" y="${18*s}" width="${w-36*s}" height="${h-36*s}" rx="${8*s}" fill="none" stroke="${c.accent}" stroke-width="${1.5*s}"/>`;
+  return svg;
+}
+export function backgroundSVG(state){const {w,h}=FORMATS[state.size];return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${OCCASIONS[state.occasion].label} background">${backgroundArtwork(state)}</svg>`;}
